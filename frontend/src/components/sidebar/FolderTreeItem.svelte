@@ -19,18 +19,18 @@
 <div>
   <button
     onclick={handleClick}
-    class="w-full text-left px-2 py-1.5 rounded text-xs font-medium flex items-center justify-between transition {$selectedFolderId === folder.id ? 'bg-slate-800 text-blue-400 font-bold' : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'}"
+    class="w-full text-left px-2 py-1.5 rounded-md text-[11px] font-medium flex items-center justify-between transition-all active:scale-[0.98] {$selectedFolderId === folder.id ? 'bg-zinc-800/80 text-zinc-100 shadow-sm' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'}"
     style="padding-left: {0.5 + folder.level * 0.75}rem;"
   >
     <div class="flex items-center space-x-2 truncate">
-      <span>{folder.icon || '📁'}</span>
+      <span class="text-[12px]">{folder.icon || '📁'}</span>
       <span class="truncate">{folder.name}</span>
     </div>
     {#if folder.children && folder.children.length > 0}
       {#if isExpanded}
-        <ChevronDown size={14} class="text-slate-500" />
+        <ChevronDown size={12} class="text-zinc-500" />
       {:else}
-        <ChevronRight size={14} class="text-slate-500" />
+        <ChevronRight size={12} class="text-zinc-500" />
       {/if}
     {/if}
   </button>

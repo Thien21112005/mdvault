@@ -18,7 +18,7 @@
   })
 </script>
 
-<main class="w-screen h-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden font-sans">
+<main class="w-screen h-screen bg-zinc-950 text-zinc-100 flex flex-col overflow-hidden font-sans">
   <Navbar />
   <div class="flex-1 flex overflow-hidden">
     <Sidebar />

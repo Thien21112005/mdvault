@@ -28,22 +28,22 @@
   }
 </script>
 
-<aside class="w-64 bg-slate-900 border-r border-slate-800 text-slate-300 flex flex-col h-[calc(100vh-3.5rem)] select-none overflow-y-auto">
+<aside class="w-64 bg-zinc-950 border-r border-zinc-800/80 text-zinc-400 flex flex-col h-[calc(100vh-3rem)] select-none overflow-y-auto">
   <!-- Actions Header -->
-  <div class="p-3 border-b border-slate-800 flex items-center justify-between">
-    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Workspace Tree</span>
-    <div class="flex space-x-1">
+  <div class="px-4 py-3 flex items-center justify-between">
+    <span class="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">Workspace</span>
+    <div class="flex space-x-0.5">
       <button
         onclick={() => (isCreatingFolder = !isCreatingFolder)}
-        class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition"
-        title="Tạo Thư mục mới"
+        class="p-1 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/50 rounded transition-all active:scale-95"
+        title="New Folder"
       >
         <FolderPlus size={14} />
       </button>
       <button
         onclick={() => (isCreatingNote = !isCreatingNote)}
-        class="p-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded transition"
-        title="Tạo Ghi chú mới"
+        class="p-1 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/50 rounded transition-all active:scale-95"
+        title="New Note"
       >
         <FilePlus size={14} />
       </button>
@@ -52,42 +52,42 @@
 
   <!-- Dialogs -->
   {#if isCreatingFolder}
-    <div class="p-2 bg-slate-800/50 border-b border-slate-700 flex items-center space-x-2">
+    <div class="px-4 py-2 bg-zinc-900/50 border-y border-zinc-800/50 flex items-center space-x-2">
       <input
         type="text"
         bind:value={newFolderName}
-        placeholder="Tên thư mục..."
-        class="flex-1 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+        placeholder="Folder name..."
+        class="flex-1 bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-[11px] text-zinc-200 focus:outline-none focus:border-zinc-600 focus:bg-zinc-900/80 transition-all shadow-inner"
         onkeydown={(e) => e.key === 'Enter' && handleCreateFolder()}
       />
-      <button onclick={handleCreateFolder} class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-1 rounded">Lưu</button>
+      <button onclick={handleCreateFolder} class="text-[11px] font-medium bg-zinc-200 hover:bg-white text-zinc-900 px-2.5 py-1 rounded transition-colors shadow-sm">Save</button>
     </div>
   {/if}
 
   {#if isCreatingNote}
-    <div class="p-2 bg-slate-800/50 border-b border-slate-700 flex items-center space-x-2">
+    <div class="px-4 py-2 bg-zinc-900/50 border-y border-zinc-800/50 flex items-center space-x-2">
       <input
         type="text"
         bind:value={newNoteTitle}
-        placeholder="Tiêu đề note..."
-        class="flex-1 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+        placeholder="Note title..."
+        class="flex-1 bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-[11px] text-zinc-200 focus:outline-none focus:border-zinc-600 focus:bg-zinc-900/80 transition-all shadow-inner"
         onkeydown={(e) => e.key === 'Enter' && handleCreateNote()}
       />
-      <button onclick={handleCreateNote} class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded">Tạo</button>
+      <button onclick={handleCreateNote} class="text-[11px] font-medium bg-zinc-200 hover:bg-white text-zinc-900 px-2.5 py-1 rounded transition-colors shadow-sm">Create</button>
     </div>
   {/if}
 
   <!-- Folders -->
-  <div class="flex-1 p-2 overflow-y-auto">
+  <div class="flex-1 px-3 py-1 overflow-y-auto">
     <button
       onclick={() => selectedFolderId.set(null)}
-      class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-2 transition {$selectedFolderId === null ? 'bg-slate-800 text-blue-400 font-bold' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}"
+      class="w-full text-left px-2 py-1.5 rounded-md text-[11px] font-medium flex items-center space-x-2 transition-all active:scale-[0.98] {$selectedFolderId === null ? 'bg-zinc-800/80 text-zinc-100 shadow-sm' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'}"
     >
-      <FolderIcon size={16} />
-      <span>Tất cả ghi chú</span>
+      <FolderIcon size={14} class={$selectedFolderId === null ? "text-zinc-300" : "text-zinc-500"} />
+      <span>All Notes</span>
     </button>
 
-    <div class="mt-2 space-y-0.5">
+    <div class="mt-1 space-y-0.5">
       {#each $folders as folder (folder.id)}
         <FolderTreeItem {folder} />
       {/each}
@@ -96,16 +96,16 @@
 
   <!-- Tags Section -->
   {#if $allTags.length > 0}
-    <div class="p-3 border-t border-slate-800">
-      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Tags ({$allTags.length})</span>
+    <div class="p-4 border-t border-zinc-800/50">
+      <span class="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest block mb-2.5">Tags ({$allTags.length})</span>
       <div class="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
         {#each $allTags as tag}
           <button
             onclick={() => selectTag(tag)}
-            class="px-2 py-0.5 rounded-full text-xs font-medium flex items-center space-x-1 transition {$selectedTag === tag ? 'bg-blue-600 text-white shadow' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}"
+            class="px-2 py-0.5 rounded-[4px] text-[10px] font-medium flex items-center space-x-1 transition-all border {$selectedTag === tag ? 'bg-zinc-200 text-zinc-900 border-zinc-200 shadow-sm' : 'bg-transparent text-zinc-400 border-zinc-800 hover:bg-zinc-800/50 hover:text-zinc-200 hover:border-zinc-700'}"
           >
             <Tag size={10} />
-            <span>#{tag}</span>
+            <span>{tag}</span>
           </button>
         {/each}
       </div>
