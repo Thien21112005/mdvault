@@ -4,6 +4,10 @@ import (
 	"embed"
 	"log"
 
+	"mdvault/controller"
+	"mdvault/infrastructure/filesystem"
+	"mdvault/usecase"
+
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -13,22 +17,22 @@ import (
 var assets embed.FS
 
 func main() {
-	// Create an instance of the app structure
-	app := NewApp()
+	// Khởi tạo các phân lớp theo Clean Architecture
+	repo := filesystem.NewVaultRepository()
+	uc := usecase.NewVaultUseCase(repo)
+	vaultCtrl := controller.NewVaultController(uc)
 
-	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "MDVault - Desktop Note Taking App",
+		Title:  "MDVault - Desktop Markdown Note Taking App",
 		Width:  1280,
 		Height: 800,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 59, A: 255},
-		OnStartup:        app.startup,
-		OnShutdown: app.shutdown,
+		BackgroundColour: &options.RGBA{R: 15, G: 23, B: 42, A: 255},
+		OnStartup:        vaultCtrl.Startup,
 		Bind: []interface{}{
-			app,
+			vaultCtrl,
 		},
 	})
 
