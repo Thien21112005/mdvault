@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { Folder, Search, Network, FileText, Moon, Sun } from '@lucide/svelte'
+  import { Folder, Search, Network, FileText } from '@lucide/svelte'
   import { viewMode } from '$lib/stores/viewStore'
   import { searchQuery, openWorkspaceDialog, rootPath } from '$lib/stores/vaultStore'
-  import { isDark, toggleTheme } from '$lib/stores/themeStore'
 
   function switchView(mode: 'list' | 'graph') {
     viewMode.set(mode)
@@ -66,17 +65,5 @@
       <span>Open</span>
     </button>
 
-    <!-- Theme toggler -->
-    <button
-      onclick={toggleTheme}
-      class="p-1.5 bg-transparent hover:bg-white/[0.06] rounded-md text-zinc-400 hover:text-zinc-200 transition-all active:scale-[0.97]"
-      title="Toggle Theme"
-    >
-      {#if $isDark}
-        <Sun size={14} />
-      {:else}
-        <Moon size={14} />
-      {/if}
-    </button>
   </div>
 </header>
