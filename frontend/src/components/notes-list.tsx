@@ -1,5 +1,4 @@
-'use client'
-
+// [CHANGE] Đã loại bỏ directive 'use client' của Next.js
 import { LayoutGrid, List } from 'lucide-react'
 import { Note, ViewMode } from '@/lib/types'
 
@@ -18,7 +17,7 @@ export function NotesList({
   viewMode,
   onViewModeChange,
 }: NotesListProps) {
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString('vi-VN', {
       month: 'short',
       day: 'numeric',

@@ -4,7 +4,7 @@ export interface Note {
   content: string
   tags: string[]
   folder: string
-  lastModified: Date
+  lastModified: Date | string
   excerpt: string
 }
 

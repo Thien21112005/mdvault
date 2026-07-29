@@ -1,5 +1,4 @@
-'use client'
-
+// [CHANGE] Đã loại bỏ directive 'use client' của Next.js
 import { useState } from 'react'
 import { Search, ChevronDown, ChevronRight, FolderOpen, Moon, Sun } from 'lucide-react'
 import { allTags } from '@/lib/mock-data'

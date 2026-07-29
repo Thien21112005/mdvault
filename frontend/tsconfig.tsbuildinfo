@@ -1,0 +1,1 @@
+{"root":["./src/main.tsx","./src/components/app.tsx","./src/components/create-folder-dialog.tsx","./src/components/note-editor.tsx","./src/components/notes-list.tsx","./src/components/sidebar.tsx","./src/components/ui/button.tsx","./src/lib/mock-data.ts","./src/lib/types.ts","./src/lib/utils.ts"],"version":"5.9.3"}

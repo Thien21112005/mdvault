@@ -1,5 +1,6 @@
 import { Note, Folder } from './types'
 
+// [CHANGE] Cấu trúc dữ liệu mock ban đầu từ v0 - sẽ được chuyển qua bindings của Wails Go sau
 export const folders: Folder[] = [
   {
     id: '1',

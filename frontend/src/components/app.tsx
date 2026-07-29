@@ -1,5 +1,4 @@
-'use client'
-
+// [CHANGE] Đã loại bỏ directive 'use client' của Next.js vì Wails hiển thị UI trực tiếp qua webview ở phía client
 import { useState, useMemo } from 'react'
 import { notes, folders as initialFolders } from '@/lib/mock-data'
 import { ViewMode, Folder } from '@/lib/types'

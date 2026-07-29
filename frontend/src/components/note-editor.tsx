@@ -1,5 +1,4 @@
-'use client'
-
+// [CHANGE] Đã loại bỏ directive 'use client' của Next.js
 import { ChevronRight } from 'lucide-react'
 import { Note } from '@/lib/types'
 import { folders } from '@/lib/mock-data'
@@ -49,46 +48,6 @@ export function NoteEditor({ note }: NoteEditorProps) {
 
     findFolder(folderId)
     return path
-  }
-
-  const renderMarkdown = (markdown: string) => {
-    let html = markdown
-
-    // Headers
-    html = html.replace(/^### (.*?)$/gm, '<h3 className="text-lg font-bold mt-4 mb-2">$1</h3>')
-    html = html.replace(/^## (.*?)$/gm, '<h2 className="text-xl font-bold mt-6 mb-3">$1</h2>')
-    html = html.replace(/^# (.*?)$/gm, '<h1 className="text-2xl font-bold mt-8 mb-4">$1</h1>')
-
-    // Code blocks
-    html = html.replace(
-      /```(\w+)?\n([\s\S]*?)```/g,
-      '<pre className="bg-gray-800 text-gray-100 p-4 rounded-lg my-4 overflow-x-auto"><code>$2</code></pre>'
-    )
-
-    // Inline code
-    html = html.replace(
-      /`([^`]+)`/g,
-      '<code className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white px-2 py-1 rounded text-sm font-mono">$1</code>'
-    )
-
-    // Bold
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong className="font-bold">$1</strong>')
-
-    // Italic
-    html = html.replace(/\*(.*?)\*/g, '<em className="italic">$1</em>')
-
-    // Lists
-    html = html.replace(/^\- (.*?)$/gm, '<li className="ml-4">$1</li>')
-    html = html.replace(/(<li.*?<\/li>)/s, '<ul className="list-disc pl-4 my-2">$1</ul>')
-
-    // Blockquotes
-    html = html.replace(/^> (.*?)$/gm, '<blockquote className="border-l-4 border-blue-500 pl-4 italic text-gray-600 dark:text-gray-400 my-2">$1</blockquote>')
-
-    // Line breaks
-    html = html.replace(/\n\n/g, '</p><p className="my-4">')
-    html = html.replace(/\n/g, '<br />')
-
-    return html
   }
 
   const pathItems = getFolderPath(note.folder)

@@ -1,3 +1,4 @@
+/* [CHANGE] Chuyển đổi từ app/globals.css sang src/index.css cho Vite + Tailwind v4 */
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';

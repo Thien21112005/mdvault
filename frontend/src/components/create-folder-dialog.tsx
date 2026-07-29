@@ -1,5 +1,4 @@
-'use client'
-
+// [CHANGE] Đã loại bỏ directive 'use client' của Next.js
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import { Folder } from '@/lib/types'
