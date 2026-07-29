@@ -23,6 +23,8 @@
     "vite": "^8.1.1"
   },
   "dependencies": {
+    "@fontsource/geist-mono": "^5.3.0",
+    "@fontsource/geist-sans": "^5.3.0",
     "@lucide/svelte": "^1.27.0",
     "@xyflow/svelte": "^1.6.2",
     "markdown-it": "^14.3.0"

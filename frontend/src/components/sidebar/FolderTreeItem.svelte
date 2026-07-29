@@ -19,7 +19,7 @@
 <div>
   <button
     onclick={handleClick}
-    class="w-full text-left px-2 py-1.5 rounded-md text-[11px] font-medium flex items-center justify-between transition-all active:scale-[0.98] {$selectedFolderId === folder.id ? 'bg-zinc-800/80 text-zinc-100 shadow-sm' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'}"
+    class="w-full text-left px-2 py-1.5 rounded-md text-[11px] font-medium flex items-center justify-between transition-all active:scale-[0.98] {$selectedFolderId === folder.id ? 'bg-white/[0.06] text-zinc-100 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]' : 'text-zinc-400 hover:bg-white/[0.03] hover:text-zinc-200'}"
     style="padding-left: {0.5 + folder.level * 0.75}rem;"
   >
     <div class="flex items-center space-x-2 truncate">
