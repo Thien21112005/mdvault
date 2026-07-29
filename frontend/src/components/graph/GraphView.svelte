@@ -23,24 +23,27 @@
   }
 </script>
 
-<div class="flex-1 bg-slate-950 h-[calc(100vh-3.5rem)] relative w-full overflow-hidden">
-  <div class="absolute top-4 left-4 z-10 bg-slate-900/90 border border-slate-800 px-4 py-2 rounded-xl shadow-lg">
-    <h3 class="font-bold text-sm text-blue-400 flex items-center space-x-2">
-      <span>🌐 Mạng Lưới Kiến Thức (Graph View)</span>
+<div class="flex-1 bg-[#0a0a0a] h-[calc(100vh-3rem)] relative w-full overflow-hidden">
+  <div class="absolute top-6 left-6 z-10 bg-[#0a0a0a]/90 backdrop-blur-md border border-zinc-800/80 px-5 py-4 rounded-xl shadow-lg max-w-sm">
+    <h3 class="font-bold text-[13px] tracking-tight text-zinc-100 flex items-center space-x-2">
+      <span>Knowledge Graph</span>
     </h3>
-    <p class="text-xs text-slate-400 mt-0.5">Sơ đồ biểu diễn các Ghi chú và kết nối Wiki-link [[note]]</p>
-    <p class="text-[11px] text-emerald-400 mt-1">💡 Mẹo: Nhấp vào nút bất kỳ để chuyển ngay tới ghi chú đó!</p>
+    <p class="text-[11px] text-zinc-400 mt-1 leading-relaxed">Visual representation of your notes and [[wiki-link]] connections.</p>
+    <div class="mt-3 pt-3 border-t border-zinc-800/50 flex items-start space-x-2">
+      <span class="text-[14px]">💡</span>
+      <p class="text-[10px] text-zinc-500 font-medium leading-relaxed">Tip: Click any node to instantly jump to that note.</p>
+    </div>
   </div>
 
   {#if $notes.length === 0}
-    <div class="w-full h-full flex items-center justify-center text-slate-600 text-sm">
-      Chưa có ghi chú nào trong Workspace để hiển thị Đồ thị.
+    <div class="w-full h-full flex items-center justify-center text-zinc-600 text-[13px] font-medium tracking-wide">
+      No notes in the workspace to display on the graph.
     </div>
   {:else}
     <SvelteFlow {nodes} {edges} fitView on:nodeclick={onNodeClick}>
-      <Background gap={20} size={1.5} color="#334155" />
-      <Controls class="bg-slate-800 text-white border-slate-700" />
-      <MiniMap class="bg-slate-900 border border-slate-800 rounded-lg" />
+      <Background gap={24} size={1} color="#27272a" />
+      <Controls class="!bg-zinc-900 !border-zinc-800 !text-zinc-400" />
+      <MiniMap class="!bg-[#0a0a0a] !border-zinc-800 rounded-lg" maskColor="#18181b80" nodeColor="#52525b" />
     </SvelteFlow>
   {/if}
 </div>
