@@ -1,7 +1,6 @@
-// [CHANGE] Đã loại bỏ directive 'use client' của Next.js
+// [CHANGE] Đã loại bỏ directive 'use client' và kết nối hàm tạo folder xuống đĩa thật qua Wails Go
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import { Folder } from '@/lib/types'
 
 const AVAILABLE_ICONS = ['📁', '📚', '🏗️', '💻', '🎨', '📝', '🔐', '🌟', '📊', '🚀', '⚙️', '🔧']
 const FOLDER_TYPES = [
@@ -12,7 +11,7 @@ const FOLDER_TYPES = [
 interface CreateFolderDialogProps {
   isOpen: boolean
   onClose: () => void
-  onCreateFolder: (folder: Folder) => void
+  onCreateFolder: (folderName: string) => void
   parentId?: string
 }
 
@@ -29,16 +28,9 @@ export function CreateFolderDialog({
   const handleCreate = () => {
     if (!folderName.trim()) return
 
-    const newFolder: Folder = {
-      id: `${Date.now()}`,
-      name: folderName,
-      icon: selectedIcon,
-      type: selectedType as 'markdown' | 'file',
-      level: 0,
-      children: [],
-    }
-
-    onCreateFolder(newFolder)
+    // [CHANGE] Gọi hàm tạo folder thực tế với tên được nhập
+    onCreateFolder(folderName.trim())
+    
     setFolderName('')
     setSelectedIcon('📁')
     setSelectedType('markdown')

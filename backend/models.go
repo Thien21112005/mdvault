@@ -1,16 +1,14 @@
 package backend
 
-import "time"
-
 // Note đại diện cho cấu trúc 1 file markdown
 type Note struct {
-	ID           string    `json:"id"`           // Đường dẫn file (tương đối hoặc tuyệt đối)
-	Title        string    `json:"title"`        // Tiêu đề từ frontmatter hoặc tên file/heading
-	Content      string    `json:"content"`      // Nội dung markdown
-	Tags         []string  `json:"tags"`         // Danh sách tag từ frontmatter
-	Folder       string    `json:"folder"`       // ID thư mục cha
-	LastModified time.Time `json:"lastModified"` // Thời gian cập nhật gần nhất
-	Excerpt      string    `json:"excerpt"`      // Tóm tắt nội dung (đoạn đầu)
+	ID           string   `json:"id"`           // Đường dẫn file (tương đối hoặc tuyệt đối)
+	Title        string   `json:"title"`        // Tiêu đề từ frontmatter hoặc tên file/heading
+	Content      string   `json:"content"`      // Nội dung markdown
+	Tags         []string `json:"tags"`         // Danh sách tag từ frontmatter
+	Folder       string   `json:"folder"`       // ID thư mục cha
+	LastModified string   `json:"lastModified"` // Thời gian cập nhật gần nhất (chuẩn ISO)
+	Excerpt      string   `json:"excerpt"`      // Tóm tắt nội dung (đoạn đầu)
 }
 
 // Folder đại diện cho thư mục chứa ghi chú hoặc tệp tin

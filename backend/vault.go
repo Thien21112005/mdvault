@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/goccy/go-yaml"
@@ -89,7 +90,7 @@ func ParseMarkdownFile(filePath string, folderID string) (*Note, error) {
 		Content:      bodyText,
 		Tags:         frontmatter.Tags,
 		Folder:       folderID,
-		LastModified: info.ModTime(),
+		LastModified: info.ModTime().Format(time.RFC3339),
 		Excerpt:      excerpt,
 	}, nil
 }
