@@ -1,17 +1,14 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { svelte } from '@sveltejs/vite-plugin-svelte'
 import tailwindcss from '@tailwindcss/vite'
-import path from 'path'
 
-// [CHANGE] Chuyển đổi từ Next.js build sang Vite bundler phù hợp cho Wails desktop application
+// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [svelte(), tailwindcss()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  server: {
-    port: 3000,
-  },
+      '$lib': '/src/lib',
+      '$components': '/src/components'
+    }
+  }
 })

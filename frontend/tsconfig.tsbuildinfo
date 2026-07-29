@@ -1,1 +1,0 @@
-{"root":["./src/main.tsx","./src/components/app.tsx","./src/components/create-folder-dialog.tsx","./src/components/note-editor.tsx","./src/components/notes-list.tsx","./src/components/sidebar.tsx","./src/components/ui/button.tsx","./src/lib/types.ts","./src/lib/utils.ts","./wailsjs/go/models.ts","./wailsjs/go/main/app.d.ts","./wailsjs/runtime/runtime.d.ts"],"version":"5.9.3"}
