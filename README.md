@@ -1,31 +1,39 @@
-# MDVault - Desktop Markdown Note Taking App
+# MDVault - Desktop Markdown Note Taking & Knowledge App
 
-**MDVault** là ứng dụng quản lý ghi chú và tri thức cá nhân nền tảng Markdown, được phát triển bằng **Wails v2** (sử dụng backend Go và giao diện Vite + React + Tailwind CSS v4).
+**MDVault** là ứng dụng quản lý ghi chú và hệ thống tri thức cá nhân nền tảng Markdown cho máy tính Desktop. Ứng dụng được thiết kế theo các tiêu chuẩn kiến trúc hiện đại hàng đầu:
+- **Backend:** **Go + Wails v2** (được mô-đun hoá theo **Clean Architecture**).
+- **Frontend:** **Svelte 5 + TypeScript + Vite + Tailwind CSS v4**.
+- **Hiển thị văn bản:** Render tốc độ cao với **`markdown-it`** và Typography.
+- **Hiển thị đồ thị tri thức:** Mạng lưới liên kết Ghi chú dạng wiki-links `[[note]]` thông qua **`@xyflow/svelte`** (Svelte Flow).
 
-## ✨ Tính năng nổi bật
-- 📂 **Quản lý Workspace hệ thống tệp:** Chọn và theo dõi mọi thay đổi trong thư mục lưu trữ Ghi chú của bạn trên ổ đĩa theo thời gian thực (realtime filesystem watcher).
-- 📝 **Soạn thảo và Quản lý YAML Frontmatter:** Parse, phân loại Tag, tạo và sửa tệp `.md` nhanh chóng với giao diện hiện đại.
-- 🎨 **Giao diện Hài hoà & Hiệu suất Cao:** Tận dụng hiệu năng vi mô từ Go và webview tĩnh, tiết kiệm bộ nhớ gấp nhiều lần so với các ứng dụng Electron truyền thống.
+---
 
-## 🚀 Hướng dẫn cài đặt và chạy (Quick Start)
+## 🌟 Đặc điểm kỹ thuật & Tường lửa Kiến trúc
 
-### Yêu cầu tiên quyết:
-- [Go 1.22+](https://golang.org/dl/)
-- [Node.js 18+ & npm](https://nodejs.org/)
-- [Wails CLI v2](https://wails.io/):
-  ```powershell
-  go install github.com/wailsapp/wails/v2/cmd/wails@latest
-  ```
+1. **Clean Architecture (Go Backend):**
+   - Sự chia tách độc lập giữa các tầng: `domain/`, `usecase/`, `infrastructure/` và `controller/`.
+   - Lắng nghe biến động ổ đĩa trực tiếp với `fsnotify`, tự động đồng bộ khi bạn chỉnh sửa file `.md` bằng editor ngoài (như VS Code, Neovim, Obsidian).
+2. **Professional Modular Svelte App:**
+   - Bộ quản lý trạng thái tập trung Svelte Stores (`lib/stores/`), cùng lớp Wails Adapter cô lập giao tiếp IPC.
+   - Trình hiển thị Graph View tương tác cho phép bạn quan sát cấu trúc kết nối tri thức và chuyển hướng ngay bằng những nhấp chuột.
 
-### Chạy chế độ phát triển (Live reload & HMR):
-Tại thư mục gốc dự án, thực hiện lệnh:
+---
+
+## 🚀 Hướng Dẫn Cài Đặt và Kích Hoạt
+
+### Requirements:
+- Go 1.22+
+- Node.js 18+ & npm
+- Wails CLI v2: `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
+
+### Chạy ứng dụng chế độ Dev (Hỗ trợ Live Reload):
+Tại thư mục gốc của kho chứa, thực hiện lệnh sau:
 ```powershell
 wails dev
 ```
-Wails sẽ tự động tải các module Go, cài đặt gói NPM frontend và hiển thị giao diện ứng dụng.
 
-### Biên dịch bản phát hành (Production Build):
+### Đóng gói ứng dụng phát hành (.EXE cho Windows):
 ```powershell
 wails build -clean -s
 ```
-Tệp thi hành ứng dụng thu gọn sẽ được sinh ra tại `build/bin/mdvault.exe`.
+Tệp thực thi độc lập mang lại trải nghiệm tối ưu tài nguyên nhất sẽ ra mắt tại: `build/bin/mdvault.exe`.
