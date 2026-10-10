@@ -17,6 +17,6 @@ Quy ước lưu trữ kế hoạch (Plan) và danh sách công việc (Todo) c�
 | :---: | :--- | :---: | :--- | :--- |
 | **01** | **Đại Tu Giao Diện Toàn Bộ Website & App** | ✅ Hoàn thành (8/8) | [`1-ui-revamp/`](file:///d:/Tu-hoc/project/MDVault/tasks/2026-10-10/1-ui-revamp) | Glassmorphism Tokens, Header Chrome, Sidebar Hierarchy, Multi-layer Notes Cards, XSS Sanitizer, NoteEditor Split-View, Galaxy Graph, Command Palette (Ctrl+K), Sonner Toasts |
 | **02** | **Xóa Bỏ Native Alert & Custom Glassmorphic Controls** | ✅ Hoàn thành (3/3) | [`2-custom-ui-controls/`](file:///d:/Tu-hoc/project/MDVault/tasks/2026-10-10/2-custom-ui-controls) | Loại bỏ blocking alert() bằng Sonner Toast, xây dựng CustomDropdown kính mờ thay thế HTML `<select>` mặc định |
-| **03** | **Toast Delight Motion & Viền Ngang Đồng Bộ** | 🚀 Đang triển khai (0/2) | [`3-toast-delight-and-grid-alignment/`](file:///d:/Tu-hoc/project/MDVault/tasks/2026-10-10/3-toast-delight-and-grid-alignment) | Đồng bộ chiều cao viền ngang Header (h-12), nâng cấp Toast Animation lướt vào/ra mượt mà, viền phát quang Ambient Glow, thanh đếm ngược và Action Button tương tác tức thì |
+| **03** | **Toast Delight Motion & Viền Ngang Đồng Bộ** | ✅ Hoàn thành (2/2) | [`3-toast-delight-and-grid-alignment/`](file:///d:/Tu-hoc/project/MDVault/tasks/2026-10-10/3-toast-delight-and-grid-alignment) | Đồng bộ chiều cao viền ngang Header (h-12), nâng cấp Toast Animation lướt vào/ra mượt mà, viền phát quang Ambient Glow, thanh đếm ngược và Action Button tương tác tức thì |
 
 
