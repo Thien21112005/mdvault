@@ -191,21 +191,22 @@ git add frontend/ ; git commit -m "sec(markdown): sanitize html rendering agains
 **Description:** Đại tu `NoteEditor.svelte`: Hỗ trợ 3 chế độ xem (Chỉ Soạn Thảo, Chỉ Xem Trước, và Xem Song Song Split-View); Bổ sung thanh công cụ định dạng văn bản nhanh (Format Toolbar); Trình quản lý Tags dạng chip badge tương tác xóa/thêm; Phím tắt lưu `Ctrl+S`.
 
 **Acceptance criteria:**
-- [ ] Người dùng có thể chuyển đổi mượt mà giữa chế độ Chỉnh sửa, Xem trước và Split View song song.
-- [ ] Thanh công cụ định dạng (In đậm, In nghiêng, Tiêu đề, Danh sách, Liên kết) cho phép chèn cú pháp nhanh vào con trỏ.
-- [ ] Quản lý Tags hiển thị dạng chip viên thuốc (badge pill) có thể nhấp để thêm/xóa riêng rẽ.
-- [ ] Bấm `Ctrl+S` kích hoạt lưu ngay lập tức và phát phản hồi xúc giác.
+- [x] Người dùng có thể chuyển đổi mượt mà giữa chế độ Chỉnh sửa, Xem trước và Split View song song.
+- [x] Thanh công cụ định dạng (In đậm, In nghiêng, Tiêu đề, Danh sách, Liên kết) cho phép chèn cú pháp nhanh vào con trỏ.
+- [x] Quản lý Tags hiển thị dạng chip viên thuốc (badge pill) có thể nhấp để thêm/xóa riêng rẽ.
+- [x] Bấm `Ctrl+S` kích hoạt lưu ngay lập tức và phát phản hồi xúc giác.
 
 **Verification & Testing:**
-- [ ] Type check: `cd frontend && npm run check` (0 errors)
-- [ ] Build test: `cd frontend && npm run build` (Exit code 0)
-- [ ] Manual check: Thử gõ nội dung ở Split View, dùng Format bar, thêm bớt tag và nhấn `Ctrl+S` lưu file.
+- [x] Type check: `cd frontend && npm run check` (0 errors)
+- [x] Build test: `cd frontend && npm run build` (Exit code 0)
+- [x] Manual check: Thử gõ nội dung ở Split View, dùng Format bar, thêm bớt tag và nhấn `Ctrl+S` lưu file.
 
 **Git Commit:**
 ```bash
 git add frontend/src/components/note/NoteEditor.svelte frontend/src/lib/stores/viewStore.ts
 git commit -m "feat(editor): implement live split-view, markdown formatting toolbar and interactive tag chips"
 ```
+*(Đã commit: `6b856c4`)*
 
 **Dependencies:** Task 5  
 **Files likely touched:**
@@ -217,9 +218,9 @@ git commit -m "feat(editor): implement live split-view, markdown formatting tool
 ---
 
 ## Checkpoint 3: Trình Soạn Thảo Đỉnh Cao (Editor Checkpoint)
-- [ ] Trình soạn thảo và đọc ghi chú đạt chuẩn trải nghiệm PKM mượt mà, hỗ trợ Split View.
-- [ ] Đã triệt tiêu hoàn toàn rủi ro XSS trong WebView2.
-- [ ] Đã commit Task 5 và Task 6 vào git history.
+- [x] Trình soạn thảo và đọc ghi chú đạt chuẩn trải nghiệm PKM mượt mà, hỗ trợ Split View.
+- [x] Đã triệt tiêu hoàn toàn rủi ro XSS trong WebView2.
+- [x] Đã commit Task 5 và Task 6 vào git history (`890be09`, `6b856c4`).
 
 ---
 
