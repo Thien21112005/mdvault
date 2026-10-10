@@ -14,6 +14,7 @@
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
     "@tsconfig/svelte": "^5.0.8",
+    "@types/dompurify": "^3.0.5",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^24.13.2",
     "svelte": "^5.56.4",
@@ -27,6 +28,7 @@
     "@fontsource/geist-sans": "^5.3.0",
     "@lucide/svelte": "^1.27.0",
     "@xyflow/svelte": "^1.6.2",
+    "dompurify": "^3.4.16",
     "markdown-it": "^14.3.0"
   }
 }
