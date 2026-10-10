@@ -163,20 +163,20 @@ git commit -m "feat(notes-list): redesign note cards with layered depth, active 
 **Description:** Khử khuẩn mã HTML đầu ra của `markdown-it` bằng thư viện hoặc bộ lọc an toàn để triệt tiêu nguy cơ Stored XSS trong Microsoft Edge WebView2 theo tiêu chuẩn `security-and-hardening`. Làm đẹp typography hiển thị (Code block có khung & nút copy, blockquote có viền gradient, danh sách công việc checkbox tương tác).
 
 **Acceptance criteria:**
-- [ ] Các thẻ HTML độc hại như `<script>` hoặc sự kiện `onerror` bị loại bỏ triệt để trước khi render lên DOM.
-- [ ] Khối Code block trong markdown có nút "Sao chép" (Copy code) phản hồi trực quan.
-- [ ] Kiểu chữ và khoảng cách dòng bài viết được tối ưu cho việc đọc dài lâu (Read mode cao cấp).
+- [x] Các thẻ HTML độc hại như `<script>` hoặc sự kiện `onerror` bị loại bỏ triệt để trước khi render lên DOM.
+- [x] Khối Code block trong markdown có nút "Sao chép" (Copy code) phản hồi trực quan.
+- [x] Kiểu chữ và khoảng cách dòng bài viết được tối ưu cho việc đọc dài lâu (Read mode cao cấp).
 
 **Verification & Testing:**
-- [ ] Security validation: Render thử chuỗi Markdown chứa payload `<script>alert(1)</script>` và `<img src=x onerror=alert(1)>`, xác minh script bị bóc tách an toàn.
-- [ ] Type check: `cd frontend && npm run check` (0 errors)
-- [ ] Build test: `cd frontend && npm run build` (Exit code 0)
+- [x] Security validation: Render thử chuỗi Markdown chứa payload `<script>alert(1)</script>` và `<img src=x onerror=alert(1)>`, xác minh script bị bóc tách an toàn.
+- [x] Type check: `cd frontend && npm run check` (0 errors)
+- [x] Build test: `cd frontend && npm run build` (Exit code 0)
 
 **Git Commit:**
 ```bash
-git add frontend/src/lib/utils/markdown.ts frontend/src/components/note/NoteEditor.svelte
-git commit -m "sec(markdown): sanitize html rendering against xss and elevate reader typography"
+git add frontend/ ; git commit -m "sec(markdown): sanitize html rendering against xss and elevate reader typography"
 ```
+*(Đã commit: `890be09`)*
 
 **Dependencies:** Task 4  
 **Files likely touched:**
