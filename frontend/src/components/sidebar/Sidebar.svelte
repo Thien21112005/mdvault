@@ -56,20 +56,24 @@
     setTimeout(() => noteInputEl?.focus(), 50)
   }
 
-  function handleCreateFolder() {
+  async function handleCreateFolder() {
     if (!newFolderName.trim()) return
     const name = newFolderName.trim()
-    createNewFolder(name)
-    toast.success('Folder Created', `Created folder "${name}"`)
+    const success = await createNewFolder(name)
+    if (success) {
+      toast.success('Folder Created', `Created folder "${name}"`)
+    }
     newFolderName = ''
     isCreatingFolder = false
   }
 
-  function handleCreateNote() {
+  async function handleCreateNote() {
     if (!newNoteTitle.trim()) return
     const title = newNoteTitle.trim()
-    createNewNote(title)
-    toast.success('Note Created', `Created note "${title}"`)
+    const success = await createNewNote(title)
+    if (success) {
+      toast.success('Note Created', `Created note "${title}"`)
+    }
     newNoteTitle = ''
     isCreatingNote = false
   }

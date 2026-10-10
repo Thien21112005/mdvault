@@ -84,7 +84,7 @@ export function updateWorkspaceState(data: WorkspaceData) {
   }
 }
 
-export async function createNewNote(title: string = 'Untitled Note') {
+export async function createNewNote(title: string = 'Untitled Note'): Promise<boolean> {
   const currentWs = get(rootPath)
   const targetFolder = get(selectedFolderId) || currentWs || 'root'
   if (!currentWs && get(folders).length === 0) {
@@ -96,16 +96,18 @@ export async function createNewNote(title: string = 'Untitled Note') {
         }
       }
     })
-    return
+    return false
   }
   const note = await WailsAdapter.createNote(targetFolder, title)
   if (note) {
     await loadInitialWorkspace()
     selectedNoteId.set(note.id)
+    return true
   }
+  return false
 }
 
-export async function createNewFolder(name: string) {
+export async function createNewFolder(name: string): Promise<boolean> {
   const currentWs = get(rootPath)
   const targetParent = get(selectedFolderId) || currentWs || 'root'
   if (!currentWs && get(folders).length === 0) {
@@ -117,12 +119,14 @@ export async function createNewFolder(name: string) {
         }
       }
     })
-    return
+    return false
   }
   const success = await WailsAdapter.createFolder(targetParent, name)
   if (success) {
     await loadInitialWorkspace()
+    return true
   }
+  return false
 }
 
 

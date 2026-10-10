@@ -50,9 +50,11 @@
       icon: FilePlus,
       run: async () => {
         closeCommandPalette()
-        await createNewNote('Untitled Note')
-        setEditorMode('edit')
-        toast.success('Note Created', 'Ready for editing')
+        const ok = await createNewNote('Untitled Note')
+        if (ok) {
+          setEditorMode('edit')
+          toast.success('Note Created', 'Ready for editing')
+        }
       }
     },
     {

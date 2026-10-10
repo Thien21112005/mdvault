@@ -67,14 +67,36 @@ git commit -m "feat(toast): elevate toast UX with smooth entrance/exit motion, a
 ```bash
 git add frontend/src/lib/stores/toastStore.ts frontend/src/components/ui/Toast.svelte
 git commit -m "fix(toast): ensure persistent container for reliable exits and add spring entrance with flip reordering"
+*(Commit `6e31fe8`)*
+
+---
+
+### Task 4: Loại Bỏ Hiện Tượng Thụt Xuống Dưới Khi Lướt Ra (Pure Horizontal Slide-out & Fix False Success Toasts)
+**Description:** Khắc phục triệt để hiện tượng thông báo bị thụt xuống dưới trước khi lướt ra, và ngăn chặn việc kích hoạt đồng thời cả thông báo cảnh báo lẫn thành công:
+- [x] Gỡ bỏ `animate:flip` trên phần tử đang thoát trong container `fixed bottom-6` (nguyên nhân gốc rễ gây ra độ dời thẳng đứng `dy = +80px` thụt xuống dưới khi container đáy co lại).
+- [x] Cố định trục tung trong `toastSlideOut`: chỉ lướt theo phương ngang `transform: translateX(${translateX}px)` với `cubicOut`, triệt tiêu hoàn toàn bất kỳ độ dịch chuyển theo trục Y nào.
+- [x] Xóa bỏ class `transition-transform` trên thẻ card để trình duyệt không tự suy diễn chuyển đổi xung đột với keyframes của Svelte.
+- [x] Sửa `createNewNote` và `createNewFolder` trong `vaultStore.ts` trả về `Promise<boolean>`, đồng thời cập nhật `Sidebar.svelte` và `CommandPalette.svelte` chỉ bắn `toast.success` khi thao tác thực sự thành công, chấm dứt tình trạng 2 thông báo mâu thuẫn xuất hiện cùng 1 lúc.
+
+**Verification & Testing:**
+- [x] Type check: `npm run check` (0 errors)
+- [x] Build test: `npm run build` (Exit code 0)
+- [x] Kiểm thử trực quan trong trình duyệt (Browser Subagent): Toast xuất hiện nảy lên với spring physics, khi tắt bằng nút `X` hoặc hết giờ thì lướt thẳng tắp sang bên phải trên đúng cao độ hiện tại, hoàn toàn không bị thụt xuống dưới.
+
+**Git Commit:**
+```bash
+git add frontend/src/components/ui/Toast.svelte frontend/src/components/sidebar/Sidebar.svelte frontend/src/lib/stores/vaultStore.ts frontend/src/components/layout/CommandPalette.svelte
+git commit -m "fix(toast): eliminate vertical drop during exit with pure horizontal slide and fix phantom success toasts"
 ```
 
 ---
 
 ## 🏁 Checkpoint: Kiểm Thử Toàn Diện & Nghiệm Thu
 - [x] Đường viền ngang giữa Sidebar, NotesList và NoteEditor thẳng tắp 100% (cùng `h-12`).
-- [x] Toast đơn lẻ hay nhiều toast xếp chồng đều có hiệu ứng nảy lên từ từ (`toastSpringIn`) và lướt mượt mà ra ngoài (`toastSlideOut`).
-- [x] Hiệu ứng sắp xếp lại vị trí thẻ (`animate:flip`) chuyển động êm ái khi một thẻ đóng.
+- [x] Toast đơn lẻ hay nhiều toast đều nổi lên nảy nhẹ đàn hồi (`toastSpringIn`).
+- [x] Toast khi đóng lướt thẳng sang phải tại đúng cao độ hiện tại, triệt tiêu 100% hiện tượng thụt xuống dưới.
+- [x] Chỉ hiển thị thông báo thành công khi thao tác lưu/tạo ghi chú thành công thật sự.
 - [x] Cả 2 lệnh `npm run check` và `npm run build` chạy thành công với mã thoát 0.
+
 
 

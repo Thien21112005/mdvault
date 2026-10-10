@@ -1,7 +1,6 @@
 <script lang="ts">
   import { CircleCheck, CircleAlert, TriangleAlert, Info, X, ArrowRight } from '@lucide/svelte'
   import { backOut, cubicOut } from 'svelte/easing'
-  import { flip } from 'svelte/animate'
   import { toast, type ToastType, type ToastItem } from '$lib/stores/toastStore'
 
   let hoveredToastId = $state<string | null>(null)
@@ -18,14 +17,14 @@
     }
   }
 
-  // Apple-grade Spring Entrance: floats up from translateY(32px) with subtle overshoot bounce
-  function toastSpringIn(_node: Element, { duration = 380 }: { duration?: number } = {}) {
+  // Apple-grade Spring Entrance: floats up from translateY(28px) with subtle overshoot bounce
+  function toastSpringIn(_node: Element, { duration = 360 }: { duration?: number } = {}) {
     return {
       duration,
       css: (t: number) => {
         const eased = backOut(t)
-        const translateY = (1 - eased) * 32
-        const scale = 0.92 + eased * 0.08
+        const translateY = (1 - eased) * 28
+        const scale = 0.94 + eased * 0.06
         const opacity = Math.min(1, t * 2)
         return `
           transform: translateY(${translateY}px) scale(${scale});
@@ -35,16 +34,15 @@
     }
   }
 
-  // Apple-grade Slide-out Dismissal: glides out to the right translateX(64px) with gentle decay
-  function toastSlideOut(_node: Element, { duration = 240 }: { duration?: number } = {}) {
+  // Pure horizontal slide-out dismissal: slides directly to the right without any vertical dropping
+  function toastSlideOut(_node: Element, { duration = 220 }: { duration?: number } = {}) {
     return {
       duration,
       css: (t: number) => {
         const eased = cubicOut(t)
-        const translateX = (1 - eased) * 64
-        const scale = 0.92 + eased * 0.08
+        const translateX = (1 - eased) * 72
         return `
-          transform: translateX(${translateX}px) scale(${scale});
+          transform: translateX(${translateX}px);
           opacity: ${eased};
         `
       }
@@ -98,11 +96,10 @@
     <div
       in:toastSpringIn
       out:toastSlideOut
-      animate:flip={{ duration: 250, easing: cubicOut }}
       onmouseenter={() => handleMouseEnter(item)}
       onmouseleave={() => handleMouseLeave(item)}
       role="alert"
-      class="pointer-events-auto relative overflow-hidden flex flex-col rounded-2xl bg-[var(--bg-surface-elevated)]/95 backdrop-blur-2xl border {styles.glow} transition-transform duration-200 hover:scale-[1.01]"
+      class="pointer-events-auto relative overflow-hidden flex flex-col rounded-2xl bg-[var(--bg-surface-elevated)]/95 backdrop-blur-2xl border {styles.glow} transition-shadow duration-200"
     >
       <!-- Subtle Top Gloss Sheen -->
       <div class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
