@@ -1,5 +1,5 @@
-# Wails & Go
-build/
+# Wails build output
+build/bin/
 bin/
 *.exe
 *.dll
