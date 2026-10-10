@@ -93,20 +93,21 @@ git commit -m "feat(layout): revamp desktop header chrome with theme switcher, b
 **Description:** Nâng cấp `Sidebar.svelte` và `FolderTreeItem.svelte` với icon động, mũi tên đóng/mở thư mục dạng chevron xoay mượt mà, huy hiệu đếm số lượng tài liệu, và thay thế các ô nhập tạo mới dạng thô bằng Modal/Popover trang nhã.
 
 **Acceptance criteria:**
-- [ ] Cây thư mục hiển thị rõ cấp bậc thụt lề, chevron mở/gập thư mục xoay với transition tự nhiên.
-- [ ] Hộp thoại tạo Folder/Note mới không còn chèn ép thanh điều hướng, thao tác trực quan với phím Enter và Esc để hủy.
-- [ ] Khu vực Thẻ (Tags) hiển thị dạng mây tag hiện đại với số lượng note trong mỗi tag và hiệu ứng active nổi bật.
+- [x] Cây thư mục hiển thị rõ cấp bậc thụt lề, chevron mở/gập thư mục xoay với transition tự nhiên.
+- [x] Hộp thoại tạo Folder/Note mới không còn chèn ép thanh điều hướng, thao tác trực quan với phím Enter và Esc để hủy.
+- [x] Khu vực Thẻ (Tags) hiển thị dạng mây tag hiện đại với số lượng note trong mỗi tag và hiệu ứng active nổi bật.
 
 **Verification & Testing:**
-- [ ] Type check: `cd frontend && npm run check` (0 errors)
-- [ ] Build test: `cd frontend && npm run build` (Exit code 0)
-- [ ] Manual check: Tạo thử folder mới, tạo note mới, mở/gập các thư mục con mượt mà; tag cloud lọc chính xác.
+- [x] Type check: `cd frontend && npm run check` (0 errors)
+- [x] Build test: `cd frontend && npm run build` (Exit code 0)
+- [x] Manual check: Tạo thử folder mới, tạo note mới, mở/gập các thư mục con mượt mà; tag cloud lọc chính xác.
 
 **Git Commit:**
 ```bash
 git add frontend/src/components/sidebar/Sidebar.svelte frontend/src/components/sidebar/FolderTreeItem.svelte
 git commit -m "feat(sidebar): enhance folder tree hierarchy, chevron rotation and smooth creation popovers"
 ```
+*(Đã commit: `ed9f3a6`)*
 
 **Dependencies:** Task 2  
 **Files likely touched:**
