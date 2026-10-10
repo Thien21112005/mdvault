@@ -88,7 +88,14 @@ export async function createNewNote(title: string = 'Untitled Note') {
   const currentWs = get(rootPath)
   const targetFolder = get(selectedFolderId) || currentWs || 'root'
   if (!currentWs && get(folders).length === 0) {
-    toast.warning('Chưa mở Workspace', 'Vui lòng nhấn "Open Vault" để chọn thư mục lưu trữ trước!')
+    toast.warning('Chưa mở Workspace', 'Vui lòng chọn thư mục lưu trữ để bắt đầu tạo ghi chú!', {
+      action: {
+        label: 'Open Vault',
+        onClick: () => {
+          openWorkspaceDialog()
+        }
+      }
+    })
     return
   }
   const note = await WailsAdapter.createNote(targetFolder, title)
@@ -102,7 +109,14 @@ export async function createNewFolder(name: string) {
   const currentWs = get(rootPath)
   const targetParent = get(selectedFolderId) || currentWs || 'root'
   if (!currentWs && get(folders).length === 0) {
-    toast.warning('Chưa mở Workspace', 'Vui lòng nhấn "Open Vault" để chọn thư mục lưu trữ trước!')
+    toast.warning('Chưa mở Workspace', 'Vui lòng chọn thư mục lưu trữ để bắt đầu tạo thư mục!', {
+      action: {
+        label: 'Open Vault',
+        onClick: () => {
+          openWorkspaceDialog()
+        }
+      }
+    })
     return
   }
   const success = await WailsAdapter.createFolder(targetParent, name)
