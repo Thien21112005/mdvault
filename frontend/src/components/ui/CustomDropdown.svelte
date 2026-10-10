@@ -1,16 +1,18 @@
-<script lang="ts">
-  import { ChevronDown, Check } from '@lucide/svelte'
-
-  export interface DropdownOption {
-    value: string
+<script module lang="ts">
+  export interface DropdownOption<O = string> {
+    value: O
     label: string
     icon?: any
     description?: string
   }
+</script>
+
+<script lang="ts" generics="T extends string = string">
+  import { ChevronDown, Check } from '@lucide/svelte'
 
   interface Props {
-    options: DropdownOption[]
-    value?: string
+    options: DropdownOption<T>[]
+    value?: T
     placeholder?: string
     align?: 'left' | 'right'
     class?: string
@@ -18,7 +20,7 @@
 
   let {
     options = [],
-    value = $bindable(''),
+    value = $bindable('' as T),
     placeholder = 'Select...',
     align = 'left',
     class: customClass = ''
@@ -32,7 +34,7 @@
   const selectedOption = $derived(options.find(opt => opt.value === value))
   const displayLabel = $derived(selectedOption ? selectedOption.label : placeholder)
 
-  function selectOption(val: string) {
+  function selectOption(val: T) {
     value = val
     isOpen = false
     triggerEl?.focus()

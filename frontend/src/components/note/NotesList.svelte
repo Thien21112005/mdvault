@@ -20,6 +20,15 @@
     type SortOption
   } from '$lib/stores/vaultStore'
   import { viewMode } from '$lib/stores/viewStore'
+  import CustomDropdown, { type DropdownOption } from '../ui/CustomDropdown.svelte'
+
+  const sortOptions: DropdownOption<SortOption>[] = [
+    { value: 'newest', label: 'Newest', icon: Clock },
+    { value: 'oldest', label: 'Oldest', icon: Calendar },
+    { value: 'title-asc', label: 'Title (A-Z)', icon: FileText },
+    { value: 'title-desc', label: 'Title (Z-A)', icon: FileText }
+  ]
+
 
   function handleSelectNote(id: string) {
     selectedNoteId.set(id)
@@ -66,19 +75,12 @@
       </span>
     </div>
 
-    <!-- Sort Dropdown Selector -->
-    <div class="flex items-center space-x-1 text-[10.5px]">
-      <ArrowDownUp size={11} class="text-[var(--text-muted)] pointer-events-none" />
-      <select
-        bind:value={$sortOption}
-        class="bg-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium text-[11px] focus:outline-none cursor-pointer border-none py-0.5 pl-0.5 pr-2 transition-colors"
-      >
-        <option value="newest" class="bg-[var(--bg-surface-elevated)] text-[var(--text-primary)]">Newest</option>
-        <option value="oldest" class="bg-[var(--bg-surface-elevated)] text-[var(--text-primary)]">Oldest</option>
-        <option value="title-asc" class="bg-[var(--bg-surface-elevated)] text-[var(--text-primary)]">Title (A-Z)</option>
-        <option value="title-desc" class="bg-[var(--bg-surface-elevated)] text-[var(--text-primary)]">Title (Z-A)</option>
-      </select>
-    </div>
+    <!-- Custom Glassmorphic Sort Dropdown -->
+    <CustomDropdown
+      options={sortOptions}
+      bind:value={$sortOption}
+      align="right"
+    />
   </div>
 
   <!-- Active Filter Notification Pill -->
