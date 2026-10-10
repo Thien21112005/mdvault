@@ -1,6 +1,8 @@
 import { writable, derived, get } from 'svelte/store'
 import type { Folder, Note, WorkspaceData } from '../types/domain'
 import { WailsAdapter } from '../wails/wailsAdapter'
+import { toast } from './toastStore'
+
 
 export const folders = writable<Folder[]>([])
 export const notes = writable<Note[]>([])
@@ -86,7 +88,7 @@ export async function createNewNote(title: string = 'Untitled Note') {
   const currentWs = get(rootPath)
   const targetFolder = get(selectedFolderId) || currentWs || 'root'
   if (!currentWs && get(folders).length === 0) {
-    alert('Vui lòng mở Workspace trước khi tạo ghi chú!')
+    toast.warning('Chưa mở Workspace', 'Vui lòng nhấn "Open Vault" để chọn thư mục lưu trữ trước!')
     return
   }
   const note = await WailsAdapter.createNote(targetFolder, title)
@@ -97,12 +99,18 @@ export async function createNewNote(title: string = 'Untitled Note') {
 }
 
 export async function createNewFolder(name: string) {
-  const targetParent = get(selectedFolderId) || get(rootPath) || 'root'
+  const currentWs = get(rootPath)
+  const targetParent = get(selectedFolderId) || currentWs || 'root'
+  if (!currentWs && get(folders).length === 0) {
+    toast.warning('Chưa mở Workspace', 'Vui lòng nhấn "Open Vault" để chọn thư mục lưu trữ trước!')
+    return
+  }
   const success = await WailsAdapter.createFolder(targetParent, name)
   if (success) {
     await loadInitialWorkspace()
   }
 }
+
 
 export async function saveActiveNote(id: string, content: string, title: string, tags: string[]) {
   const success = await WailsAdapter.saveNoteContent(id, content, title, tags)
