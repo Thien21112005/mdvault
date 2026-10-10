@@ -67,7 +67,7 @@
 
 <div class="w-80 bg-[var(--bg-surface)] backdrop-blur-xl border-r border-[var(--border-subtle)] flex flex-col h-[calc(100vh-3.25rem)] select-none transition-colors duration-200">
   <!-- Header Bar with Count & Sort Control -->
-  <div class="px-3.5 py-3 border-b border-[var(--border-subtle)] flex items-center justify-between sticky top-0 z-10 bg-[var(--bg-surface)]/90 backdrop-blur-md">
+  <div class="h-12 px-3.5 border-b border-[var(--border-subtle)] flex items-center justify-between sticky top-0 z-10 bg-[var(--bg-surface)]/90 backdrop-blur-md shrink-0">
     <div class="flex items-center space-x-1.5">
       <span class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Notes</span>
       <span class="px-1.5 py-0.2 rounded-full text-[9px] font-mono font-semibold bg-[var(--bg-surface-active)] text-[var(--text-muted)]">
