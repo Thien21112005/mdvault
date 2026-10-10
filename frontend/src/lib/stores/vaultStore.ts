@@ -12,16 +12,32 @@ export const selectedTag = writable<string | null>(null)
 export const selectedNoteId = writable<string | null>(null)
 export const searchQuery = writable<string>('')
 
-// Derived filtered notes
+export type SortOption = 'newest' | 'oldest' | 'title-asc' | 'title-desc'
+export const sortOption = writable<SortOption>('newest')
+
+// Derived filtered & sorted notes
 export const filteredNotes = derived(
-  [notes, selectedFolderId, selectedTag, searchQuery],
-  ([$notes, $folderId, $tag, $query]) => {
-    return $notes.filter(note => {
+  [notes, selectedFolderId, selectedTag, searchQuery, sortOption],
+  ([$notes, $folderId, $tag, $query, $sort]) => {
+    const list = $notes.filter(note => {
       const matchesFolder = !$folderId || note.folder === $folderId || (note.folder && note.folder.startsWith($folderId))
       const matchesTag = !$tag || (note.tags && note.tags.includes($tag))
       const q = $query.toLowerCase().trim()
       const matchesQuery = !q || (note.title && note.title.toLowerCase().includes(q)) || (note.content && note.content.toLowerCase().includes(q))
       return matchesFolder && matchesTag && matchesQuery
+    })
+
+    return list.sort((a, b) => {
+      if ($sort === 'newest') {
+        return (b.lastModified || '').localeCompare(a.lastModified || '')
+      } else if ($sort === 'oldest') {
+        return (a.lastModified || '').localeCompare(b.lastModified || '')
+      } else if ($sort === 'title-asc') {
+        return (a.title || '').localeCompare(b.title || '')
+      } else if ($sort === 'title-desc') {
+        return (b.title || '').localeCompare(a.title || '')
+      }
+      return 0
     })
   }
 )
