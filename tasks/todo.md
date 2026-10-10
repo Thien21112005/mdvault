@@ -124,21 +124,22 @@ git commit -m "feat(sidebar): enhance folder tree hierarchy, chevron rotation an
 **Description:** Tái thiết kế toàn bộ `NotesList.svelte`: Note Card hiển thị tiêu đề, trích đoạn tóm tắt 2 dòng, ngày tháng sửa đổi dạng thân thiện, tag chips; bổ sung thanh công cụ sắp xếp (Mới nhất, Cũ nhất, Tên A-Z) và trạng thái rỗng (Empty State) bắt mắt.
 
 **Acceptance criteria:**
-- [ ] Mỗi thẻ Note Card có hiệu ứng hover nâng nhẹ và phản hồi nhấp chuột `:active scale(0.99)`.
-- [ ] Note đang được chọn có dải sáng Accent Glow Indigo hoặc Amber phát quang mềm mại.
-- [ ] Hỗ trợ chọn tiêu chí sắp xếp ghi chú.
-- [ ] Khi không có ghi chú nào tìm thấy, hiển thị Empty State đồ họa tinh tế kèm lời gợi ý hữu ích.
+- [x] Mỗi thẻ Note Card có hiệu ứng hover nâng nhẹ và phản hồi nhấp chuột `:active scale(0.99)`.
+- [x] Note đang được chọn có dải sáng Accent Glow Indigo hoặc Amber phát quang mềm mại.
+- [x] Hỗ trợ chọn tiêu chí sắp xếp ghi chú.
+- [x] Khi không có ghi chú nào tìm thấy, hiển thị Empty State đồ họa tinh tế kèm lời gợi ý hữu ích.
 
 **Verification & Testing:**
-- [ ] Type check: `cd frontend && npm run check` (0 errors)
-- [ ] Build test: `cd frontend && npm run build` (Exit code 0)
-- [ ] Manual check: Lọc thử theo tag, gõ từ khóa tìm kiếm, kiểm tra đổi ghi chú trong danh sách mượt mà.
+- [x] Type check: `cd frontend && npm run check` (0 errors)
+- [x] Build test: `cd frontend && npm run build` (Exit code 0)
+- [x] Manual check: Lọc thử theo tag, gõ từ khóa tìm kiếm, kiểm tra đổi ghi chú trong danh sách mượt mà.
 
 **Git Commit:**
 ```bash
 git add frontend/src/components/note/NotesList.svelte frontend/src/lib/stores/vaultStore.ts
 git commit -m "feat(notes-list): redesign note cards with layered depth, active glow and sorting options"
 ```
+*(Đã commit: `bb124d8`)*
 
 **Dependencies:** Task 3  
 **Files likely touched:**
@@ -150,9 +151,9 @@ git commit -m "feat(notes-list): redesign note cards with layered depth, active 
 ---
 
 ## Checkpoint 2: Trải Nghiệm Điều Hướng & Quản Lý Danh Sách (Navigation Checkpoint)
-- [ ] Hai cột bên trái (Sidebar và NotesList) hoạt động đồng bộ, bố cục chuẩn tỷ lệ vàng.
-- [ ] Thao tác tìm kiếm và chuyển đổi giữa các note phản hồi tức thì dưới 16ms.
-- [ ] Đã commit đầy đủ Task 3 và Task 4 vào git history.
+- [x] Hai cột bên trái (Sidebar và NotesList) hoạt động đồng bộ, bố cục chuẩn tỷ lệ vàng.
+- [x] Thao tác tìm kiếm và chuyển đổi giữa các note phản hồi tức thì dưới 16ms.
+- [x] Đã commit đầy đủ Task 3 và Task 4 vào git history (`ed9f3a6`, `bb124d8`).
 
 ---
 
