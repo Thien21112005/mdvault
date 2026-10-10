@@ -53,26 +53,28 @@ git commit -m "feat(ui): create reusable glassmorphic custom dropdown component"
 
 ### Task 3: Tích Hợp `CustomDropdown` Vào Bộ Sắp Xếp `NotesList.svelte`
 **Description:** Thay thế thẻ HTML `<select>` mặc định trong `NotesList.svelte` bằng `CustomDropdown.svelte`:
-- [ ] Xóa bỏ `<select>` và các thẻ `<option>` nguyên thủy.
-- [ ] Truyền danh sách tùy chọn sắp xếp (`Newest`, `Oldest`, `Title (A-Z)`, `Title (Z-A)`) vào `CustomDropdown`.
-- [ ] Liên kết 2 chiều với store reactive `$sortOption`.
-- [ ] Đảm bảo hiển thị hoàn hảo trên cả 2 theme Dark Mode và Light Mode.
+- [x] Xóa bỏ `<select>` và các thẻ `<option>` nguyên thủy.
+- [x] Truyền danh sách tùy chọn sắp xếp (`Newest`, `Oldest`, `Title (A-Z)`, `Title (Z-A)`) vào `CustomDropdown`.
+- [x] Liên kết 2 chiều với store reactive `$sortOption`.
+- [x] Đảm bảo hiển thị hoàn hảo trên cả 2 theme Dark Mode và Light Mode.
 
 **Verification & Testing:**
-- [ ] Type check: `npm run check` (0 errors)
-- [ ] Build test: `npm run build` (Exit code 0)
-- [ ] Manual check: Nhấp vào menu sắp xếp -> menu kính mờ xuất hiện mượt mà, chọn đổi tùy chí sắp xếp -> danh sách ghi chú cập nhật ngay tức khắc.
+- [x] Type check: `npm run check` (0 errors)
+- [x] Build test: `npm run build` (Exit code 0)
+- [x] Manual check: Nhấp vào menu sắp xếp -> menu kính mờ xuất hiện mượt mà, chọn đổi tùy chí sắp xếp -> danh sách ghi chú cập nhật ngay tức khắc.
 
 **Git Commit:**
 ```bash
 git add frontend/src/components/note/NotesList.svelte
 git commit -m "feat(notes-list): replace native html select with glassmorphic custom dropdown"
 ```
+*(Đã commit: `a452edb`)*
 
 ---
 
 ## 🏁 Checkpoint: Kiểm Thử Toàn Diện & Hoàn Thành Đợt 2
-- [ ] Không còn bất kỳ native `alert()` nào xuất hiện trong ứng dụng.
-- [ ] Không còn native `<select>` HTML dropdown nào gây lệch phong cách thiết kế.
-- [ ] Cả 3 lệnh `npm run check`, `npm run build` đều chạy thành công mỹ mãn với mã thoát 0.
-- [ ] Đã hoàn tất 3 commits theo chuẩn Conventional Commits.
+- [x] Không còn bất kỳ native `alert()` nào xuất hiện trong ứng dụng (100% Zero-Alert Protocol).
+- [x] Không còn native `<select>` HTML dropdown nào gây lệch phong cách thiết kế.
+- [x] Cả 3 lệnh `npm run check`, `npm run build` đều chạy thành công mỹ mãn với mã thoát 0.
+- [x] Đã hoàn tất 3 commits chuẩn hóa (`1225dea`, `7873e0e`, `a452edb`).
+
