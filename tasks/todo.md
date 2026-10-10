@@ -25,20 +25,20 @@
 **Description:** Khởi tạo hệ thống biến CSS token cao cấp (Glassmorphism, Layered Elevation Shadows, Custom Apple Springs & Easing Curves, Surface Tints) và hoàn thiện hỗ trợ hai giao diện Dark & Light mode tương thích chuẩn Tailwind v4.
 
 **Acceptance criteria:**
-- [ ] Định nghĩa các token biến CSS cho Glass surfaces, border glow, shadow đa tầng và easing curves (`--ease-apple`).
-- [ ] Hỗ trợ đầy đủ dark & light theme styling mượt mà, không bị chói hoặc gắt màu.
-- [ ] Typography Geist Sans & Geist Mono được cấu hình tracking và line-height theo chuẩn optical sizing.
+- [x] Định nghĩa các token biến CSS cho Glass surfaces, border glow, shadow đa tầng và easing curves (`--ease-apple`).
+- [x] Hỗ trợ đầy đủ dark & light theme styling mượt mà, không bị chói hoặc gắt màu.
+- [x] Typography Geist Sans & Geist Mono được cấu hình tracking và line-height theo chuẩn optical sizing.
 
 **Verification & Testing:**
-- [ ] Type check: `cd frontend && npm run check` (0 errors)
-- [ ] Build succeeds: `cd frontend && npm run build` (Exit code 0)
-- [ ] Manual visual check: CSS tokens nạp đầy đủ trong DOM không sinh lỗi parse; áp dụng được cả dark và light mode.
+- [x] Type check: `cd frontend && npm run check` (0 errors)
+- [x] Build succeeds: `cd frontend && npm run build` (Exit code 0)
+- [x] Manual visual check: CSS tokens nạp đầy đủ trong DOM không sinh lỗi parse; áp dụng được cả dark và light mode.
 
 **Git Commit:**
 ```bash
-git add frontend/src/app.css frontend/src/App.svelte
-git commit -m "style(design-system): implement glassmorphism tokens, optical typography and dual theme palette"
+git add frontend/ ; git commit -m "style(design-system): implement glassmorphism tokens, optical typography and dual theme palette"
 ```
+*(Đã commit: `32951ab`)*
 
 **Dependencies:** None  
 **Files likely touched:**
@@ -53,21 +53,22 @@ git commit -m "style(design-system): implement glassmorphism tokens, optical typ
 **Description:** Thiết kế lại thanh tiêu đề của ứng dụng thành Desktop Application Chrome: Tích hợp nút đóng/mở Sidebar, Breadcrumb thư mục đang mở, Command Palette trigger (`⌘K`/`Ctrl+K`), nút chuyển theme (Dark/Light), và hiển thị trạng thái kết nối vault trực quan.
 
 **Acceptance criteria:**
-- [ ] Navbar có bố cục cân đối, mang dáng dấp ứng dụng Desktop bản địa (Native Desktop Feel) thay vì thanh điều hướng web thông thường.
-- [ ] Nút Toggle Sidebar có animation chuyển đổi trạng thái mượt mà.
-- [ ] Tích hợp nút chuyển theme (Sun/Moon icon) kết nối trực tiếp với `themeStore`.
-- [ ] Nút View Switcher (List vs Graph) sử dụng Segmented Pill Control có hiệu ứng trượt/nổi bật rõ rệt.
+- [x] Navbar có bố cục cân đối, mang dáng dấp ứng dụng Desktop bản địa (Native Desktop Feel) thay vì thanh điều hướng web thông thường.
+- [x] Nút Toggle Sidebar có animation chuyển đổi trạng thái mượt mà.
+- [x] Tích hợp nút chuyển theme (Sun/Moon icon) kết nối trực tiếp với `themeStore`.
+- [x] Nút View Switcher (List vs Graph) sử dụng Segmented Pill Control có hiệu ứng trượt/nổi bật rõ rệt.
 
 **Verification & Testing:**
-- [ ] Type check: `cd frontend && npm run check` (0 errors)
-- [ ] Build test: `cd frontend && npm run build` (Exit code 0)
-- [ ] Manual check: Thao tác bấm đổi theme Dark/Light, chuyển đổi view mode List/Graph và toggle sidebar hoạt động trơn tru.
+- [x] Type check: `cd frontend && npm run check` (0 errors)
+- [x] Build test: `cd frontend && npm run build` (Exit code 0)
+- [x] Manual check: Thao tác bấm đổi theme Dark/Light, chuyển đổi view mode List/Graph và toggle sidebar hoạt động trơn tru.
 
 **Git Commit:**
 ```bash
 git add frontend/src/components/layout/Navbar.svelte frontend/src/App.svelte frontend/src/lib/stores/viewStore.ts
 git commit -m "feat(layout): revamp desktop header chrome with theme switcher, breadcrumb and view controls"
 ```
+*(Đã commit: `3ffef50`)*
 
 **Dependencies:** Task 1  
 **Files likely touched:**
@@ -80,9 +81,9 @@ git commit -m "feat(layout): revamp desktop header chrome with theme switcher, b
 ---
 
 ## Checkpoint 1: Nền Tảng Khung Giao Diện (Foundation Checkpoint)
-- [ ] `npm run check` và `npm run build` trong `frontend/` biên dịch sạch sẽ không có lỗi.
-- [ ] Khung Shell của ứng dụng hiển thị mượt mà với tông màu sang trọng, chuyển đổi theme trơn tru.
-- [ ] Đã hoàn thành 2 commits sạch cho Task 1 và Task 2.
+- [x] `npm run check` và `npm run build` trong `frontend/` biên dịch sạch sẽ không có lỗi.
+- [x] Khung Shell của ứng dụng hiển thị mượt mà với tông màu sang trọng, chuyển đổi theme trơn tru.
+- [x] Đã hoàn thành 2 commits sạch cho Task 1 và Task 2 (`32951ab`, `3ffef50`).
 
 ---
 
