@@ -16,3 +16,5 @@ Quy ước lưu trữ kế hoạch (Plan) và danh sách công việc (Todo) c�
 | STT | Nhiệm Vụ / Kế Hoạch | Trạng Thái | Đường Dẫn Plan & Todo | Nội Dung Chính |
 | :---: | :--- | :---: | :--- | :--- |
 | **01** | **Đại Tu Giao Diện Toàn Bộ Website & App** | ✅ Hoàn thành (8/8) | [`1-ui-revamp/`](file:///d:/Tu-hoc/project/MDVault/tasks/2026-10-10/1-ui-revamp) | Glassmorphism Tokens, Header Chrome, Sidebar Hierarchy, Multi-layer Notes Cards, XSS Sanitizer, NoteEditor Split-View, Galaxy Graph, Command Palette (Ctrl+K), Sonner Toasts |
+| **02** | **Xóa Bỏ Native Alert & Custom Glassmorphic Controls** | 🔄 Đang Lên Kế Hoạch | [`2-custom-ui-controls/`](file:///d:/Tu-hoc/project/MDVault/tasks/2026-10-10/2-custom-ui-controls) | Loại bỏ blocking alert() bằng Sonner Toast, xây dựng CustomDropdown kính mờ thay thế HTML `<select>` mặc định |
+
