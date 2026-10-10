@@ -31,21 +31,23 @@ git commit -m "fix(vault): replace blocking browser alert with sonner toast warn
 
 ### Task 2: Xây Dựng Component `CustomDropdown.svelte` Kính Mờ Cao Cấp
 **Description:** Tạo component tái sử dụng `frontend/src/components/ui/CustomDropdown.svelte`:
-- [ ] Trigger hiển thị nhãn hiện tại + Chevron xoay $180^\circ$ khi mở bằng `--ease-apple`.
-- [ ] Popover menu kính mờ `backdrop-blur-xl`, bo góc mềm mại, viền sáng sheen kim loại.
-- [ ] Mỗi option có icon checkmark `Check` khi active, hiệu ứng hover nhạy bén.
-- [ ] Tự động đóng menu khi click ra ngoài (`clickOutside` handler) hoặc nhấn phím `Escape`.
-- [ ] Hỗ trợ phím mũi tên `ArrowUp` / `ArrowDown` và `Enter` để chọn mục bằng bàn phím.
+- [x] Trigger hiển thị nhãn hiện tại + Chevron xoay $180^\circ$ khi mở bằng `--ease-apple`.
+- [x] Popover menu kính mờ `backdrop-blur-xl`, bo góc mềm mại, viền sáng sheen kim loại.
+- [x] Mỗi option có icon checkmark `Check` khi active, hiệu ứng hover nhạy bén.
+- [x] Tự động đóng menu khi click ra ngoài (`clickOutside` handler) hoặc nhấn phím `Escape`.
+- [x] Hỗ trợ phím mũi tên `ArrowUp` / `ArrowDown` và `Enter` để chọn mục bằng bàn phím.
 
 **Verification & Testing:**
-- [ ] Type check: `npm run check` (0 errors)
-- [ ] Build test: `npm run build` (Exit code 0)
+- [x] Type check: `npm run check` (0 errors)
+- [x] Build test: `npm run build` (Exit code 0)
 
 **Git Commit:**
 ```bash
 git add frontend/src/components/ui/CustomDropdown.svelte
 git commit -m "feat(ui): create reusable glassmorphic custom dropdown component"
 ```
+*(Đã commit: `7873e0e`)*
+
 
 ---
 
