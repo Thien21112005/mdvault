@@ -10,20 +10,22 @@
 
 ### Task 1: Loại Bỏ Native `alert()` & Thay Bằng Toast Cảnh Báo
 **Description:** Loại bỏ triệt để lệnh `alert()` trong `vaultStore.ts` khi người dùng cố tạo note mà chưa mở Workspace. Chuyển sang dùng `toast.warning()` trang nhã kèm lời nhắc rõ ràng.
-- [ ] Xóa `alert('Vui lòng mở Workspace trước khi tạo ghi chú!')` trong `vaultStore.ts`.
-- [ ] Bổ sung `toast.warning('Chưa mở Workspace', 'Vui lòng nhấn "Open Vault" để chọn thư mục lưu trữ trước!')`.
-- [ ] Kiểm tra toàn bộ mã nguồn không còn bất kỳ lệnh `alert()`, `confirm()`, `prompt()` nào.
+- [x] Xóa `alert('Vui lòng mở Workspace trước khi tạo ghi chú!')` trong `vaultStore.ts`.
+- [x] Bổ sung `toast.warning('Chưa mở Workspace', 'Vui lòng nhấn "Open Vault" để chọn thư mục lưu trữ trước!')`.
+- [x] Kiểm tra toàn bộ mã nguồn không còn bất kỳ lệnh `alert()`, `confirm()`, `prompt()` nào.
 
 **Verification & Testing:**
-- [ ] Type check: `npm run check` (0 errors)
-- [ ] Build test: `npm run build` (Exit code 0)
-- [ ] Thử mở ứng dụng khi chưa chọn Vault và nhấn nút "Create Note" -> xuất hiện Toast cảnh báo màu vàng thay vì pop-up trình duyệt.
+- [x] Type check: `npm run check` (0 errors)
+- [x] Build test: `npm run build` (Exit code 0)
+- [x] Thử mở ứng dụng khi chưa chọn Vault và nhấn nút "Create Note" -> xuất hiện Toast cảnh báo màu vàng thay vì pop-up trình duyệt.
 
 **Git Commit:**
 ```bash
 git add frontend/src/lib/stores/vaultStore.ts
 git commit -m "fix(vault): replace blocking browser alert with sonner toast warning"
 ```
+*(Đã commit: `1225dea`)*
+
 
 ---
 
