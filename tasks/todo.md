@@ -260,34 +260,37 @@ git commit -m "feat(graph): style galaxy-inspired knowledge graph with glowing n
 **Description:** Bổ sung Modal Command Palette (`Ctrl+K` / `⌘K`) cho phép tìm kiếm mọi note, mở nhanh view đồ thị, tạo note mới chỉ bằng bàn phím; Tích hợp hệ thống Toast thông báo mini góc màn hình cho các hành động (Đã lưu note, Mở workspace, Sao chép link).
 
 **Acceptance criteria:**
-- [ ] Nhấn `Ctrl+K` hoặc bấm vào thanh tìm kiếm trên Navbar sẽ mở Modal Command Palette với backdrop làm mờ màn hình.
-- [ ] Có thể dùng phím mũi tên Lên/Xuống và Enter để chọn nhanh ghi chú từ kết quả tìm kiếm.
-- [ ] Các hành động lưu tệp, tạo folder hiển thị Toast thông báo trang nhã, tự động biến mất sau 3 giây.
+- [x] Nhấn `Ctrl+K` hoặc bấm vào thanh tìm kiếm trên Navbar sẽ mở Modal Command Palette với backdrop làm mờ màn hình.
+- [x] Có thể dùng phím mũi tên Lên/Xuống và Enter để chọn nhanh ghi chú từ kết quả tìm kiếm.
+- [x] Các hành động lưu tệp, tạo folder hiển thị Toast thông báo trang nhã, tự động biến mất sau 3 giây.
 
 **Verification & Testing:**
-- [ ] Type check: `cd frontend && npm run check` (0 errors)
-- [ ] Build test: `cd frontend && npm run build` (Exit code 0)
-- [ ] Manual check: Nhấn `Ctrl+K` thử tìm và nhảy tới note; lưu note kiểm tra Toast hiển thị mượt mà.
+- [x] Type check: `cd frontend && npm run check` (0 errors)
+- [x] Build test: `cd frontend && npm run build` (Exit code 0)
+- [x] Manual check: Nhấn `Ctrl+K` thử tìm và nhảy tới note; lưu note kiểm tra Toast hiển thị mượt mà.
 
 **Git Commit:**
 ```bash
-git add frontend/src/components/layout/CommandPalette.svelte frontend/src/components/ui/Toast.svelte frontend/src/App.svelte
+git add frontend/
 git commit -m "feat(ux): integrate ctrl+k command palette and sonner-style toast notifications"
 ```
+*(Đã commit: `593a6a1`)*
 
 **Dependencies:** Task 7  
 **Files likely touched:**
-- `frontend/src/components/layout/CommandPalette.svelte` (Tạo mới)
-- `frontend/src/components/ui/Toast.svelte` (Tạo mới)
+- `frontend/src/components/layout/CommandPalette.svelte`
+- `frontend/src/components/ui/Toast.svelte`
+- `frontend/src/lib/stores/toastStore.ts`
 - `frontend/src/App.svelte`
 
-**Estimated scope:** Medium (3 files)
+**Estimated scope:** Medium (4 files)
 
 ---
 
 ## Checkpoint 4 & Final Review: Kiểm Thử Toàn Diện & Code Review 2 Trục
-- [ ] Tất cả các bài kiểm tra type `npm run check` và lệnh build `npm run build` hoàn thành với mã thoát 0.
-- [ ] Đã thực hiện đầy đủ 8 commits chuẩn hóa theo từng lát cắt mỏng.
-- [ ] Tiến hành Code Review theo 2 trục của `mdvault-orchestrator`:
-  - [ ] **Trục Standards:** Mã nguồn Svelte 5 sạch sẽ, tuân thủ Clean Architecture, không có smell hay duplicate code.
-  - [ ] **Trục Spec:** Đáp ứng trọn vẹn tất cả yêu cầu trong SRS.md (FR-01 đến FR-07) và các tiêu chuẩn phi chức năng NFR.
+- [x] Tất cả các bài kiểm tra type `npm run check` và lệnh build `npm run build` hoàn thành với mã thoát 0.
+- [x] Đã thực hiện đầy đủ 8 commits chuẩn hóa theo từng lát cắt mỏng (`32951ab`, `3ffef50`, `ed9f3a6`, `bb124d8`, `890be09`, `6b856c4`, `2730b2f`, `593a6a1`).
+- [x] Tiến hành Code Review theo 2 trục của `mdvault-orchestrator`:
+  - [x] **Trục Standards:** Mã nguồn Svelte 5 sạch sẽ với Runes (`$state`, `$derived`, `$effect`), tuân thủ Clean Architecture, không có smell hay duplicate code.
+  - [x] **Trục Spec:** Đáp ứng trọn vẹn tất cả yêu cầu trong SRS.md (FR-01 đến FR-07) và các tiêu chuẩn phi chức năng NFR.
+
