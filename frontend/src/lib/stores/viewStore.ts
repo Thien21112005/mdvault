@@ -21,3 +21,18 @@ export function setEditorMode(mode: EditorMode) {
   isEditingNote.set(mode !== 'preview')
 }
 
+export const isCommandPaletteOpen = writable<boolean>(false)
+
+export function openCommandPalette() {
+  isCommandPaletteOpen.set(true)
+}
+
+export function closeCommandPalette() {
+  isCommandPaletteOpen.set(false)
+}
+
+export function toggleCommandPalette() {
+  isCommandPaletteOpen.update(v => !v)
+}
+
+

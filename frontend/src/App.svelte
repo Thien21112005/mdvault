@@ -5,8 +5,10 @@
   import NotesList from './components/note/NotesList.svelte'
   import NoteEditor from './components/note/NoteEditor.svelte'
   import GraphView from './components/graph/GraphView.svelte'
+  import CommandPalette from './components/layout/CommandPalette.svelte'
+  import Toast from './components/ui/Toast.svelte'
   import { loadInitialWorkspace, initWatcher } from '$lib/stores/vaultStore'
-  import { viewMode, isSidebarOpen, toggleSidebar, switchView } from '$lib/stores/viewStore'
+  import { viewMode, isSidebarOpen, toggleSidebar, switchView, openCommandPalette } from '$lib/stores/viewStore'
   import { initTheme } from '$lib/stores/themeStore'
 
   function handleKeydown(e: KeyboardEvent) {
@@ -22,11 +24,7 @@
       switchView('graph')
     } else if (isMeta && e.key.toLowerCase() === 'k') {
       e.preventDefault()
-      const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement | null
-      if (searchInput) {
-        searchInput.focus()
-        searchInput.select()
-      }
+      openCommandPalette()
     }
   }
 
@@ -62,4 +60,8 @@
       <GraphView />
     {/if}
   </div>
+
+  <!-- Global Command Palette Modal & Sonner Toast Notifications -->
+  <CommandPalette />
+  <Toast />
 </main>

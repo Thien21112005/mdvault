@@ -21,6 +21,8 @@
     rootPath
   } from '$lib/stores/vaultStore'
   import FolderTreeItem from './FolderTreeItem.svelte'
+  import { toast } from '$lib/stores/toastStore'
+
 
   let isCreatingFolder = $state(false)
   let newFolderName = $state('')
@@ -56,17 +58,22 @@
 
   function handleCreateFolder() {
     if (!newFolderName.trim()) return
-    createNewFolder(newFolderName.trim())
+    const name = newFolderName.trim()
+    createNewFolder(name)
+    toast.success('Folder Created', `Created folder "${name}"`)
     newFolderName = ''
     isCreatingFolder = false
   }
 
   function handleCreateNote() {
     if (!newNoteTitle.trim()) return
-    createNewNote(newNoteTitle.trim())
+    const title = newNoteTitle.trim()
+    createNewNote(title)
+    toast.success('Note Created', `Created note "${title}"`)
     newNoteTitle = ''
     isCreatingNote = false
   }
+
 
   function selectTag(t: string) {
     if ($selectedTag === t) selectedTag.set(null)

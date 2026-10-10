@@ -82,7 +82,7 @@ export function updateWorkspaceState(data: WorkspaceData) {
   }
 }
 
-export async function createNewNote(title: string) {
+export async function createNewNote(title: string = 'Untitled Note') {
   const currentWs = get(rootPath)
   const targetFolder = get(selectedFolderId) || currentWs || 'root'
   if (!currentWs && get(folders).length === 0) {

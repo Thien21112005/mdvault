@@ -11,16 +11,9 @@
     X,
     Sparkles
   } from '@lucide/svelte'
-  import { viewMode, isSidebarOpen, toggleSidebar, switchView } from '$lib/stores/viewStore'
+  import { viewMode, isSidebarOpen, toggleSidebar, switchView, openCommandPalette } from '$lib/stores/viewStore'
   import { searchQuery, openWorkspaceDialog, rootPath } from '$lib/stores/vaultStore'
   import { isDark, toggleTheme } from '$lib/stores/themeStore'
-
-  let searchInputEl = $state<HTMLInputElement | null>(null)
-
-  function clearSearch() {
-    searchQuery.set('')
-    if (searchInputEl) searchInputEl.focus()
-  }
 
   function getVaultName(path: string): string {
     if (!path) return 'No Vault Open'
@@ -74,36 +67,22 @@
 
   <!-- Center Section: Quick Search & Command Hint -->
   <div class="flex-1 max-w-md mx-4">
-    <div class="relative w-full group">
+    <button
+      onclick={openCommandPalette}
+      class="w-full bg-[var(--bg-surface-active)] hover:bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] rounded-lg pl-9 pr-3 py-1.5 text-[12.5px] text-[var(--text-muted)] text-left transition-all shadow-inner flex items-center justify-between cursor-pointer group relative pressable"
+      title="Search or execute commands (Ctrl+K)"
+    >
       <Search
         size={13.5}
-        class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--accent-primary)] transition-colors pointer-events-none"
+        class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-hover:text-[var(--accent-primary)] transition-colors pointer-events-none"
       />
       
-      <input
-        bind:this={searchInputEl}
-        type="text"
-        bind:value={$searchQuery}
-        placeholder="Quick search notes, tags... (Ctrl+K)"
-        class="w-full bg-[var(--bg-surface-active)] border border-[var(--border-subtle)] rounded-lg pl-9 pr-14 py-1.5 text-[12.5px] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)] focus:bg-[var(--bg-surface-elevated)] focus:ring-2 focus:ring-[var(--accent-glow)] transition-all shadow-inner"
-      />
+      <span class="truncate">Search notes, commands... (Ctrl+K)</span>
 
-      <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
-        {#if $searchQuery}
-          <button
-            onclick={clearSearch}
-            class="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)] transition-colors"
-            title="Clear search"
-          >
-            <X size={12} />
-          </button>
-        {:else}
-          <kbd class="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[9.5px] font-mono font-semibold text-[var(--text-muted)] bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] rounded shadow-xs pointer-events-none">
-            Ctrl+K
-          </kbd>
-        {/if}
-      </div>
-    </div>
+      <kbd class="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[9.5px] font-mono font-semibold text-[var(--text-muted)] bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] rounded shadow-xs pointer-events-none group-hover:border-[var(--border-strong)]">
+        Ctrl+K
+      </kbd>
+    </button>
   </div>
 
   <!-- Right Section: View Mode, Theme Toggle & Vault Button -->

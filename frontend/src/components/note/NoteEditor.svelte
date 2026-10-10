@@ -22,6 +22,8 @@
   import { selectedNote, saveActiveNote, notes, selectedNoteId } from '$lib/stores/vaultStore'
   import { editorMode, setEditorMode } from '$lib/stores/viewStore'
   import { renderMarkdown } from '$lib/utils/markdown'
+  import { toast } from '$lib/stores/toastStore'
+
 
   let editTitle = $state('')
   let editTagsList = $state<string[]>([])
@@ -58,6 +60,7 @@
     }
 
     saveActiveNote($selectedNote.id, editContent, editTitle, editTagsList)
+    toast.success('Note Saved', 'All changes stored safely')
     isSavedToast = true
     setTimeout(() => {
       isSavedToast = false
