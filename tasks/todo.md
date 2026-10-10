@@ -230,27 +230,29 @@ git commit -m "feat(editor): implement live split-view, markdown formatting tool
 **Description:** Nâng cấp `GraphView.svelte` từ các khối hộp cơ bản thành mạng lưới thiên hà tương tác sống động: Node hình tròn phát quang nhẹ với kích thước tỷ lệ theo số lượng liên kết, màu sắc phân biệt theo danh mục/thẻ, bảng điều khiển góc kính mờ sang trọng.
 
 **Acceptance criteria:**
-- [ ] Nodes trong đồ thị hiển thị dạng các điểm sáng hành tinh (Planet Nodes) phát quang nhẹ.
-- [ ] Đường liên kết (Edges) có hiệu ứng mờ nhạt uyển chuyển, khi hover vào node sẽ làm sáng các kết nối liên quan.
-- [ ] MiniMap và Controls được bọc kính mờ đồng bộ với toàn bộ theme.
+- [x] Nodes trong đồ thị hiển thị dạng các điểm sáng hành tinh (Planet Nodes) phát quang nhẹ.
+- [x] Đường liên kết (Edges) có hiệu ứng mờ nhạt uyển chuyển, khi hover vào node sẽ làm sáng các kết nối liên quan.
+- [x] MiniMap và Controls được bọc kính mờ đồng bộ với toàn bộ theme.
 
 **Verification & Testing:**
-- [ ] Type check: `cd frontend && npm run check` (0 errors)
-- [ ] Build test: `cd frontend && npm run build` (Exit code 0)
-- [ ] Manual check: Chuyển sang Graph view, kéo thả di chuyển các node, phóng to/thu nhỏ và nhấp vào node để mở bài viết tương ứng.
+- [x] Type check: `cd frontend && npm run check` (0 errors)
+- [x] Build test: `cd frontend && npm run build` (Exit code 0)
+- [x] Manual check: Chuyển sang Graph view, kéo thả di chuyển các node, phóng to/thu nhỏ và nhấp vào node để mở bài viết tương ứng.
 
 **Git Commit:**
 ```bash
-git add frontend/src/components/graph/GraphView.svelte frontend/src/lib/utils/graphBuilder.ts
+git add frontend/src/components/graph/ frontend/src/lib/utils/graphBuilder.ts
 git commit -m "feat(graph): style galaxy-inspired knowledge graph with glowing nodes and smooth physics"
 ```
+*(Đã commit: `2730b2f`)*
 
 **Dependencies:** Task 6  
 **Files likely touched:**
 - `frontend/src/components/graph/GraphView.svelte`
+- `frontend/src/components/graph/PlanetNode.svelte`
 - `frontend/src/lib/utils/graphBuilder.ts`
 
-**Estimated scope:** Medium (2 files)
+**Estimated scope:** Medium (3 files)
 
 ---
 
