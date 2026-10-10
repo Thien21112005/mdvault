@@ -32,7 +32,21 @@ function createToastStore() {
     const duration = item.duration ?? 4200
     const newToast: ToastItem = { ...item, id, duration, createdAt: Date.now() }
 
-    update(list => [...list, newToast])
+    update(list => {
+      const next = [...list, newToast]
+      if (next.length > 4) {
+        const excess = next.slice(0, next.length - 4)
+        excess.forEach(t => {
+          const tmr = timers.get(t.id)
+          if (tmr) {
+            clearTimeout(tmr)
+            timers.delete(t.id)
+          }
+        })
+        return next.slice(-4)
+      }
+      return next
+    })
 
     if (duration > 0) {
       const timer = setTimeout(() => {

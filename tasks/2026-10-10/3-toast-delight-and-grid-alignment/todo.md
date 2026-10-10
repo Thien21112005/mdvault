@@ -49,8 +49,32 @@ git commit -m "feat(toast): elevate toast UX with smooth entrance/exit motion, a
 
 ---
 
+### Task 3: Tinh Chỉnh Spring Physics & Khắc Phục Lỗi Unmount Container Đột Ngột
+**Description:** Khắc phục triệt để hiện tượng xuất hiện cái rụp (thiếu entrance nảy lên từ từ) và mất hiệu ứng lướt ra khi chỉ có 1 thông báo duy nhất:
+- [x] Gỡ bỏ block `{#if $toast.length > 0}` bọc ngoài, giữ container cố định trong DOM (`pointer-events-none`) để Svelte không hủy parent đột ngột làm đứt `out:` transition khi toast cuối cùng biến mất.
+- [x] Xây dựng custom `toastSpringIn` với `backOut` physics (`translateY(32px) scale(0.92)` -> `translateY(0) scale(1)`) tạo độ nảy đàn hồi (spring overshoot) nổi lên từ từ cực kỳ tự nhiên.
+- [x] Xây dựng `toastSlideOut` với `cubicOut` (`translateX(64px) scale(0.92)`) lướt mượt mà sang phải khi đóng.
+- [x] Áp dụng `animate:flip={{ duration: 250, easing: cubicOut }}` từ `svelte/animate` giúp các thông báo còn lại tự động trượt êm ái vào vị trí mới khi một thông báo biến mất thay vì giật cục.
+- [x] Giới hạn tối đa 4 toast trong `toastStore.ts` để tránh tràn màn hình khi xuất hiện hàng loạt.
+
+**Verification & Testing:**
+- [x] Type check: `npm run check` (0 errors)
+- [x] Build test: `npm run build` (Exit code 0)
+- [x] Kiểm thử thông báo đơn lẻ: nảy lên từ từ nhẹ nhàng (`spring overshoot`), khi hết hạn hoặc click `X` lướt êm ái sang phải trước khi biến mất hoàn toàn.
+- [x] Kiểm thử nhiều thông báo xếp chồng: các thẻ trượt mượt mà bằng FLIP layout animation, không đè lấn giật cục.
+
+**Git Commit:**
+```bash
+git add frontend/src/lib/stores/toastStore.ts frontend/src/components/ui/Toast.svelte
+git commit -m "fix(toast): ensure persistent container for reliable exits and add spring entrance with flip reordering"
+```
+
+---
+
 ## 🏁 Checkpoint: Kiểm Thử Toàn Diện & Nghiệm Thu
 - [x] Đường viền ngang giữa Sidebar, NotesList và NoteEditor thẳng tắp 100% (cùng `h-12`).
-- [x] Toast notification xuất hiện lướt vào/ra mượt mà, đẹp mắt, có nút bấm tương tác tức thì.
+- [x] Toast đơn lẻ hay nhiều toast xếp chồng đều có hiệu ứng nảy lên từ từ (`toastSpringIn`) và lướt mượt mà ra ngoài (`toastSlideOut`).
+- [x] Hiệu ứng sắp xếp lại vị trí thẻ (`animate:flip`) chuyển động êm ái khi một thẻ đóng.
 - [x] Cả 2 lệnh `npm run check` và `npm run build` chạy thành công với mã thoát 0.
+
 

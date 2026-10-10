@@ -1,7 +1,7 @@
 <script lang="ts">
   import { CircleCheck, CircleAlert, TriangleAlert, Info, X, ArrowRight } from '@lucide/svelte'
-  import { fly } from 'svelte/transition'
-  import { cubicOut, cubicIn } from 'svelte/easing'
+  import { backOut, cubicOut } from 'svelte/easing'
+  import { flip } from 'svelte/animate'
   import { toast, type ToastType, type ToastItem } from '$lib/stores/toastStore'
 
   let hoveredToastId = $state<string | null>(null)
@@ -15,6 +15,39 @@
     if (hoveredToastId === item.id) {
       hoveredToastId = null
       toast.resume(item.id)
+    }
+  }
+
+  // Apple-grade Spring Entrance: floats up from translateY(32px) with subtle overshoot bounce
+  function toastSpringIn(_node: Element, { duration = 380 }: { duration?: number } = {}) {
+    return {
+      duration,
+      css: (t: number) => {
+        const eased = backOut(t)
+        const translateY = (1 - eased) * 32
+        const scale = 0.92 + eased * 0.08
+        const opacity = Math.min(1, t * 2)
+        return `
+          transform: translateY(${translateY}px) scale(${scale});
+          opacity: ${opacity};
+        `
+      }
+    }
+  }
+
+  // Apple-grade Slide-out Dismissal: glides out to the right translateX(64px) with gentle decay
+  function toastSlideOut(_node: Element, { duration = 240 }: { duration?: number } = {}) {
+    return {
+      duration,
+      css: (t: number) => {
+        const eased = cubicOut(t)
+        const translateX = (1 - eased) * 64
+        const scale = 0.92 + eased * 0.08
+        return `
+          transform: translateX(${translateX}px) scale(${scale});
+          opacity: ${eased};
+        `
+      }
     }
   }
 
@@ -53,95 +86,95 @@
   }
 </script>
 
-{#if $toast.length > 0}
-  <div
-    class="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 pointer-events-none max-w-sm w-full select-none"
-    role="region"
-    aria-label="Notifications"
-  >
-    {#each $toast as item (item.id)}
-      {@const styles = getTypeStyles(item.type)}
-      {@const isHovered = hoveredToastId === item.id}
-      <div
-        in:fly={{ y: 24, duration: 320, easing: cubicOut }}
-        out:fly={{ x: 64, opacity: 0, duration: 220, easing: cubicIn }}
-        onmouseenter={() => handleMouseEnter(item)}
-        onmouseleave={() => handleMouseLeave(item)}
-        role="alert"
-        class="pointer-events-auto relative overflow-hidden flex flex-col rounded-2xl bg-[var(--bg-surface-elevated)]/95 backdrop-blur-2xl border {styles.glow} transition-transform duration-200 hover:scale-[1.01]"
-      >
-        <!-- Subtle Top Gloss Sheen -->
-        <div class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+<!-- Outer container ALWAYS remains in DOM to ensure single-toast exits and entrances never get cut off by premature unmounting -->
+<div
+  class="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 pointer-events-none max-w-sm w-full select-none"
+  role="region"
+  aria-label="Notifications"
+>
+  {#each $toast as item (item.id)}
+    {@const styles = getTypeStyles(item.type)}
+    {@const isHovered = hoveredToastId === item.id}
+    <div
+      in:toastSpringIn
+      out:toastSlideOut
+      animate:flip={{ duration: 250, easing: cubicOut }}
+      onmouseenter={() => handleMouseEnter(item)}
+      onmouseleave={() => handleMouseLeave(item)}
+      role="alert"
+      class="pointer-events-auto relative overflow-hidden flex flex-col rounded-2xl bg-[var(--bg-surface-elevated)]/95 backdrop-blur-2xl border {styles.glow} transition-transform duration-200 hover:scale-[1.01]"
+    >
+      <!-- Subtle Top Gloss Sheen -->
+      <div class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
 
-        <!-- Main Content Row -->
-        <div class="relative p-4 flex items-start justify-between space-x-3.5">
-          <div class="flex items-start space-x-3 flex-1 min-w-0">
-            <!-- Icon Pill Badge -->
-            <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 {styles.badge} shadow-sm">
-              {#if item.type === 'success'}
-                <CircleCheck size={18} strokeWidth={2.2} />
-              {:else if item.type === 'error'}
-                <CircleAlert size={18} strokeWidth={2.2} />
-              {:else if item.type === 'warning'}
-                <TriangleAlert size={18} strokeWidth={2.2} />
-              {:else}
-                <Info size={18} strokeWidth={2.2} />
-              {/if}
-            </div>
-
-            <!-- Text Content -->
-            <div class="flex-1 min-w-0 pt-0.5">
-              <h4 class="text-[13px] font-bold text-[var(--text-primary)] leading-tight tracking-tight">
-                {item.title}
-              </h4>
-              {#if item.description}
-                <p class="text-[11.5px] text-[var(--text-secondary)] mt-1 leading-relaxed font-normal">
-                  {item.description}
-                </p>
-              {/if}
-            </div>
+      <!-- Main Content Row -->
+      <div class="relative p-4 flex items-start justify-between space-x-3.5">
+        <div class="flex items-start space-x-3 flex-1 min-w-0">
+          <!-- Icon Pill Badge -->
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 {styles.badge} shadow-sm">
+            {#if item.type === 'success'}
+              <CircleCheck size={18} strokeWidth={2.2} />
+            {:else if item.type === 'error'}
+              <CircleAlert size={18} strokeWidth={2.2} />
+            {:else if item.type === 'warning'}
+              <TriangleAlert size={18} strokeWidth={2.2} />
+            {:else}
+              <Info size={18} strokeWidth={2.2} />
+            {/if}
           </div>
 
-          <!-- Close Dismiss Button -->
-          <button
-            onclick={() => toast.remove(item.id)}
-            class="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1.5 rounded-lg hover:bg-[var(--bg-surface-hover)] border border-transparent hover:border-[var(--border-subtle)] transition-colors pressable shrink-0 -mr-1 -mt-1 cursor-pointer"
-            title="Dismiss notification"
-            aria-label="Dismiss notification"
-          >
-            <X size={14} strokeWidth={2} />
-          </button>
+          <!-- Text Content -->
+          <div class="flex-1 min-w-0 pt-0.5">
+            <h4 class="text-[13px] font-bold text-[var(--text-primary)] leading-tight tracking-tight">
+              {item.title}
+            </h4>
+            {#if item.description}
+              <p class="text-[11.5px] text-[var(--text-secondary)] mt-1 leading-relaxed font-normal">
+                {item.description}
+              </p>
+            {/if}
+          </div>
         </div>
 
-        <!-- Optional Action CTA Button -->
-        {#if item.action}
-          <div class="relative px-4 pb-3.5 pt-0 flex items-center justify-end">
-            <button
-              onclick={() => {
-                item.action?.onClick()
-                toast.remove(item.id)
-              }}
-              class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-[11.5px] font-semibold {styles.actionBtn} hover:brightness-110 active:scale-[0.97] transition-all pressable cursor-pointer"
-            >
-              <span>{item.action.label}</span>
-              <ArrowRight size={13} strokeWidth={2.2} />
-            </button>
-          </div>
-        {/if}
-
-        <!-- Countdown Progress Bar -->
-        {#if item.duration > 0}
-          <div class="absolute bottom-0 left-0 right-0 h-[2.5px] bg-black/5 dark:bg-white/5 overflow-hidden">
-            <div
-              class="h-full {styles.progress}"
-              style="animation: toast-timer-progress {item.duration}ms linear forwards; animation-play-state: {isHovered ? 'paused' : 'running'};"
-            ></div>
-          </div>
-        {/if}
+        <!-- Close Dismiss Button -->
+        <button
+          onclick={() => toast.remove(item.id)}
+          class="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1.5 rounded-lg hover:bg-[var(--bg-surface-hover)] border border-transparent hover:border-[var(--border-subtle)] transition-colors pressable shrink-0 -mr-1 -mt-1 cursor-pointer"
+          title="Dismiss notification"
+          aria-label="Dismiss notification"
+        >
+          <X size={14} strokeWidth={2} />
+        </button>
       </div>
-    {/each}
-  </div>
-{/if}
+
+      <!-- Optional Action CTA Button -->
+      {#if item.action}
+        <div class="relative px-4 pb-3.5 pt-0 flex items-center justify-end">
+          <button
+            onclick={() => {
+              item.action?.onClick()
+              toast.remove(item.id)
+            }}
+            class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-[11.5px] font-semibold {styles.actionBtn} hover:brightness-110 active:scale-[0.97] transition-all pressable cursor-pointer"
+          >
+            <span>{item.action.label}</span>
+            <ArrowRight size={13} strokeWidth={2.2} />
+          </button>
+        </div>
+      {/if}
+
+      <!-- Countdown Progress Bar -->
+      {#if item.duration > 0}
+        <div class="absolute bottom-0 left-0 right-0 h-[2.5px] bg-black/5 dark:bg-white/5 overflow-hidden">
+          <div
+            class="h-full {styles.progress}"
+            style="animation: toast-timer-progress {item.duration}ms linear forwards; animation-play-state: {isHovered ? 'paused' : 'running'};"
+          ></div>
+        </div>
+      {/if}
+    </div>
+  {/each}
+</div>
 
 <style>
   @keyframes toast-timer-progress {
