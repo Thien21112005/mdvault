@@ -10,12 +10,175 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-sans: "Geist Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: "Geist Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Emil Kowalski & Apple Design Easing Curves */
+  --ease-apple: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+:root {
+  /* Light Theme (Warm Ivory & Polished Mineral Glass) */
+  --bg-canvas: #fcfcfd;
+  --bg-surface: rgba(255, 255, 255, 0.85);
+  --bg-surface-elevated: rgba(255, 255, 255, 0.95);
+  --bg-surface-active: rgba(15, 23, 42, 0.06);
+  --bg-surface-hover: rgba(15, 23, 42, 0.035);
+  
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-sheen: rgba(15, 23, 42, 0.12);
+  --border-highlight: rgba(255, 255, 255, 0.8);
+
+  --text-primary: #09090b;
+  --text-secondary: #52525b;
+  --text-muted: #71717a;
+
+  --accent-primary: #4f46e5;
+  --accent-foreground: #ffffff;
+  --accent-glow: rgba(79, 70, 229, 0.22);
+  --accent-soft: rgba(79, 70, 229, 0.08);
+
+  /* Elevation Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-glass: 0 4px 16px -2px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-elevated: 0 12px 32px -8px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+
+  --scroll-thumb: rgba(0, 0, 0, 0.15);
+  --scroll-thumb-hover: rgba(0, 0, 0, 0.28);
+}
+
+.dark {
+  /* Dark Theme (Obsidian Matrix & Translucent Slate) */
+  --bg-canvas: #09090b;
+  --bg-surface: rgba(18, 18, 22, 0.72);
+  --bg-surface-elevated: rgba(24, 24, 29, 0.88);
+  --bg-surface-active: rgba(255, 255, 255, 0.08);
+  --bg-surface-hover: rgba(255, 255, 255, 0.045);
+  
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-sheen: rgba(255, 255, 255, 0.12);
+  --border-highlight: rgba(255, 255, 255, 0.16);
+
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+
+  --accent-primary: #6366f1;
+  --accent-foreground: #ffffff;
+  --accent-glow: rgba(99, 102, 241, 0.35);
+  --accent-soft: rgba(99, 102, 241, 0.12);
+
+  /* Elevation Shadows */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  --shadow-glass: 0 8px 24px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-elevated: 0 16px 40px -8px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+  --scroll-thumb: rgba(255, 255, 255, 0.14);
+  --scroll-thumb-hover: rgba(255, 255, 255, 0.25);
 }
 
 @layer base {
-  body {
-    @apply bg-white dark:bg-black text-zinc-900 dark:text-zinc-200 antialiased selection:bg-zinc-800 selection:text-white m-0 p-0 overflow-hidden font-sans tracking-tight;
+  * {
+    box-sizing: border-box;
   }
+
+  body {
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    letter-spacing: -0.011em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    user-select: none;
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+
+  /* Custom Modern Sleek Scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--scroll-thumb);
+    border-radius: 9999px;
+    transition: background 150ms ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scroll-thumb-hover);
+  }
+}
+
+/* Glassmorphism & Depth Utilities */
+.glass-chrome {
+  background: var(--bg-surface);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+}
+
+.glass-panel {
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border-color: var(--border-subtle);
+}
+
+.glass-modal {
+  background: var(--bg-surface-elevated);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid var(--border-sheen);
+  box-shadow: var(--shadow-elevated);
+}
+
+/* Tactile Micro-Interactions (Emil Kowalski Standard) */
+.pressable {
+  transition: transform 120ms var(--ease-apple), opacity 120ms ease, background-color 150ms ease;
+}
+
+.pressable:active {
+  transform: scale(0.97);
+}
+
+.pressable-subtle {
+  transition: transform 120ms var(--ease-apple), background-color 150ms ease;
+}
+
+.pressable-subtle:active {
+  transform: scale(0.985);
+}
+
+/* Optical Typography Utilities */
+.heading-display {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+
+.heading-section {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+
+.text-meta {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }

@@ -14,8 +14,8 @@
     edges = graph.edges as unknown as Edge[]
   })
 
-  function onNodeClick(event: CustomEvent<{ event: MouseEvent; node: Node }>) {
-    const id = event.detail.node.id
+  function onNodeClick({ node }: { node: Node }) {
+    const id = node.id
     if (id) {
       selectedNoteId.set(id)
       viewMode.set('list')
@@ -40,8 +40,8 @@
       No notes in the workspace to display on the graph.
     </div>
   {:else}
-    <SvelteFlow {nodes} {edges} fitView on:nodeclick={onNodeClick}>
-      <Background gap={24} size={1} color="#3f3f46" />
+    <SvelteFlow {nodes} {edges} fitView onnodeclick={onNodeClick}>
+      <Background gap={24} size={1} patternColor="#3f3f46" />
       <Controls class="!bg-white/[0.02] !border-white/[0.06] !text-zinc-400 backdrop-blur-md shadow-lg" />
       <MiniMap class="!bg-black/50 !border-white/[0.06] backdrop-blur-md rounded-lg shadow-lg" maskColor="#00000080" nodeColor="#52525b" />
     </SvelteFlow>

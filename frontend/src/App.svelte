@@ -7,18 +7,16 @@
   import GraphView from './components/graph/GraphView.svelte'
   import { loadInitialWorkspace, initWatcher } from '$lib/stores/vaultStore'
   import { viewMode } from '$lib/stores/viewStore'
-  import { isDark } from '$lib/stores/themeStore'
+  import { initTheme } from '$lib/stores/themeStore'
 
   onMount(async () => {
-    isDark.set(true)
-    document.documentElement.classList.add('dark')
-    
+    initTheme()
     await loadInitialWorkspace()
     initWatcher()
   })
 </script>
 
-<main class="w-screen h-screen bg-black text-zinc-200 flex flex-col overflow-hidden font-sans">
+<main class="w-screen h-screen bg-[var(--bg-canvas)] text-[var(--text-primary)] flex flex-col overflow-hidden font-sans select-none transition-colors duration-200">
   <Navbar />
   <div class="flex-1 flex overflow-hidden">
     <Sidebar />
