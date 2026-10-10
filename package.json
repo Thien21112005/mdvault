@@ -1,0 +1,13 @@
+{
+  "name": "mdvault",
+  "private": true,
+  "version": "1.0.0",
+  "description": "MDVault - Desktop Markdown Knowledge Management Application",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "check": "npm --prefix frontend run check",
+    "wails:dev": "wails dev",
+    "wails:build": "wails build"
+  }
+}
