@@ -544,6 +544,7 @@ func (r *vaultRepositoryImpl) CreateNote(folderPath string, noteTitle string) (*
 		return nil, err
 	}
 	fileName := strings.ToLower(strings.ReplaceAll(noteTitle, " ", "-"))
+	fileName = filepath.Base(fileName)
 	if !strings.HasSuffix(fileName, ".md") {
 		fileName += ".md"
 	}

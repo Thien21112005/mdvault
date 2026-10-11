@@ -307,3 +307,86 @@ func TestVaultUseCase_PathNormalization_And_RootFolder(t *testing.T) {
 	}
 }
 
+func TestVaultUseCase_PathTraversal_Rejected(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "mdvault_uc_sec_test_*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	repo := filesystem.NewVaultRepository()
+	uc := NewVaultUseCase(repo)
+
+	if _, err := uc.OpenWorkspace(tempDir); err != nil {
+		t.Fatalf("OpenWorkspace failed: %v", err)
+	}
+
+	// 1. GetNote with relative path traversal
+	if _, err := uc.GetNote("../../system_file.md"); err == nil {
+		t.Errorf("Expected GetNote with ../../ to fail with access denied error, but got nil")
+	} else if !strings.Contains(err.Error(), "truy cập bị từ chối") {
+		t.Errorf("Expected 'truy cập bị từ chối' error message, got: %v", err)
+	}
+
+	// 2. GetNote with absolute path traversal
+	absOutside := filepath.Join(tempDir, "..", "..", "system_file.md")
+	if _, err := uc.GetNote(absOutside); err == nil {
+		t.Errorf("Expected GetNote with outside absolute path to fail, got nil")
+	} else if !strings.Contains(err.Error(), "truy cập bị từ chối") {
+		t.Errorf("Expected 'truy cập bị từ chối' error message, got: %v", err)
+	}
+
+	// 3. SaveNote with path traversal
+	if err := uc.SaveNote("../../shadow.txt", "exploit", "Exploit", nil); err == nil {
+		t.Errorf("Expected SaveNote with ../../ to fail, got nil")
+	} else if !strings.Contains(err.Error(), "truy cập bị từ chối") {
+		t.Errorf("Expected 'truy cập bị từ chối', got: %v", err)
+	}
+
+	// 4. CreateFolder outside workspace
+	if err := uc.CreateFolder("../../outside_folder", "sub"); err == nil {
+		t.Errorf("Expected CreateFolder with ../../ to fail, got nil")
+	} else if !strings.Contains(err.Error(), "truy cập bị từ chối") {
+		t.Errorf("Expected 'truy cập bị từ chối', got: %v", err)
+	}
+
+	// 5. CreateFolder with folderName containing traversal
+	if err := uc.CreateFolder("root", "../../evil_folder"); err == nil {
+		t.Errorf("Expected CreateFolder with malicious folderName to fail, got nil")
+	} else if !strings.Contains(err.Error(), "truy cập bị từ chối") {
+		t.Errorf("Expected 'truy cập bị từ chối', got: %v", err)
+	}
+
+	// 6. CreateNote outside workspace
+	if _, err := uc.CreateNote("../../outside_folder", "Evil Note"); err == nil {
+		t.Errorf("Expected CreateNote with ../../ to fail, got nil")
+	} else if !strings.Contains(err.Error(), "truy cập bị từ chối") {
+		t.Errorf("Expected 'truy cập bị từ chối', got: %v", err)
+	}
+
+	// 7. CreateNote with noteTitle containing traversal
+	if _, err := uc.CreateNote("root", "../../Evil Note"); err == nil {
+		t.Errorf("Expected CreateNote with malicious noteTitle to fail, got nil")
+	} else if !strings.Contains(err.Error(), "truy cập bị từ chối") {
+		t.Errorf("Expected 'truy cập bị từ chối', got: %v", err)
+	}
+
+	// 8. Thao tác hợp lệ bên trong workspace vẫn hoạt động hoàn hảo
+	safeNote, err := uc.CreateNote("root", "Safe Note")
+	if err != nil {
+		t.Fatalf("CreateNote inside workspace failed: %v", err)
+	}
+	if safeNote.Folder != "root" {
+		t.Errorf("Expected safeNote.Folder == 'root', got '%s'", safeNote.Folder)
+	}
+
+	retrieved, err := uc.GetNote(safeNote.ID)
+	if err != nil {
+		t.Fatalf("GetNote for valid note failed: %v", err)
+	}
+	if retrieved.Title != "Safe Note" {
+		t.Errorf("Expected title 'Safe Note', got '%s'", retrieved.Title)
+	}
+}
+
+

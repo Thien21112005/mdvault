@@ -223,27 +223,30 @@ git commit -m "refactor(path): normalize slash formatting on windows and standar
 **Description:** Bổ sung lớp kiểm tra an toàn đường dẫn trong `usecase/vault_usecase.go` và `controller/vault_controller.go`. Sử dụng `filepath.Clean` và kiểm tra ràng buộc `strings.HasPrefix(targetPath, absWorkspaceRoot)` để ngăn chặn việc đọc/ghi/tạo tệp ngoài phạm vi Workspace được chỉ định.
 
 **Acceptance criteria:**
-- [ ] Mọi đường dẫn truyền vào từ IPC được làm sạch bằng `filepath.Clean`.
-- [ ] Bất kỳ yêu cầu truy cập nào chứa `../` thoát khỏi workspace root đều bị từ chối với mã lỗi an toàn.
-- [ ] Không cho phép tạo note/folder vượt ra ngoài ranh giới workspace.
+- [x] Mọi đường dẫn truyền vào từ IPC được làm sạch bằng `filepath.Clean`.
+- [x] Bất kỳ yêu cầu truy cập nào chứa `../` thoát khỏi workspace root đều bị từ chối với mã lỗi an toàn ("truy cập bị từ chối: đường dẫn vượt ra ngoài ranh giới workspace").
+- [x] Không cho phép tạo note/folder vượt ra ngoài ranh giới workspace.
 
 **Verification & Testing:**
-- [ ] Tests pass: Viết test cố tình truyền `../../system_file.md`, đảm bảo trả về lỗi truy cập bị từ chối.
-- [ ] Build succeeds: `go build -v .`
+- [x] Tests pass: Test cố tình truyền `../../system_file.md`, `../../shadow.txt`, malicious folder/note titles với `..` đều bị từ chối (`TestVaultUseCase_PathTraversal_Rejected` PASS).
+- [x] Race detection: `go test -race ./...` (0 cảnh báo Data Race).
+- [x] Build succeeds: `go build -v .` (exit code 0).
 
 **Git Commit:**
 ```bash
-git add usecase/vault_usecase.go controller/vault_controller.go
+git add usecase/vault_usecase.go usecase/vault_usecase_test.go controller/vault_controller.go infrastructure/filesystem/vault_repository_impl.go
 git commit -m "sec(storage): enforce path traversal boundary validation against workspace root"
 ```
-*(Trạng thái: ⏳ Chờ commit)*
+*(Trạng thái: ✅ Đã commit `6f192b5`)*
 
 **Dependencies:** Phase 3  
 **Files likely touched:**
 - `usecase/vault_usecase.go`
+- `usecase/vault_usecase_test.go`
 - `controller/vault_controller.go`
+- `infrastructure/filesystem/vault_repository_impl.go`
 
-**Estimated scope:** Small (2 files)
+**Estimated scope:** Small (2-4 files)
 
 ---
 

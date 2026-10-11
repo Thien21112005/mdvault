@@ -25,7 +25,7 @@ Quy ước lưu trữ kế hoạch (Plan) và danh sách công việc (Todo) c�
 
 | STT | Nhiệm Vụ / Kế Hoạch | Trạng Thái | Đường Dẫn Plan & Todo | Nội Dung Chính |
 | :---: | :--- | :--- | :--- | :--- |
-| **01** | **Gia Cố & Cải Tạo Toàn Diện Backend Go** | ⏳ Đang thực hiện (6/10) | [`tasks/2026-10-11/1-backend-hardening-and-refactor/`](file:///d:/Tu-hoc/project/MDVault/tasks/2026-10-11/1-backend-hardening-and-refactor/) | Sửa bão sự kiện Watcher & Debounce 50ms, Triển khai Atomic Write (.tmp -> Rename), Bảo toàn 100% Frontmatter YAML, In-memory Caching (sync.RWMutex), Chuẩn hóa đường dẫn ToSlash, Chống Path Traversal, Bổ sung CRUD (Delete/Rename) và Bộ Unit Test Go đầy đủ (-race) |
+| **01** | **Gia Cố & Cải Tạo Toàn Diện Backend Go** | ⏳ Đang thực hiện (7/10) | [`tasks/2026-10-11/1-backend-hardening-and-refactor/`](file:///d:/Tu-hoc/project/MDVault/tasks/2026-10-11/1-backend-hardening-and-refactor/) | Sửa bão sự kiện Watcher & Debounce 50ms, Triển khai Atomic Write (.tmp -> Rename), Bảo toàn 100% Frontmatter YAML, In-memory Caching (sync.RWMutex), Chuẩn hóa đường dẫn ToSlash, Chống Path Traversal, Bổ sung CRUD (Delete/Rename) và Bộ Unit Test Go đầy đủ (-race) |
 
 
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"mdvault/domain/model"
 	"mdvault/usecase"
@@ -60,19 +61,25 @@ func (c *VaultController) ScanFolder() (*model.WorkspaceData, error) {
 }
 
 func (c *VaultController) GetNoteContent(filePath string) (*model.Note, error) {
-	return c.useCase.GetNote(filePath)
+	cleanPath := filepath.Clean(strings.TrimSpace(filePath))
+	return c.useCase.GetNote(cleanPath)
 }
 
 func (c *VaultController) SaveNoteContent(filePath string, content string, title string, tags []string) error {
-	return c.useCase.SaveNote(filePath, content, title, tags)
+	cleanPath := filepath.Clean(strings.TrimSpace(filePath))
+	return c.useCase.SaveNote(cleanPath, content, title, tags)
 }
 
 func (c *VaultController) CreateFolder(parentPath string, folderName string) error {
-	return c.useCase.CreateFolder(parentPath, folderName)
+	cleanParent := filepath.Clean(strings.TrimSpace(parentPath))
+	cleanFolder := strings.TrimSpace(folderName)
+	return c.useCase.CreateFolder(cleanParent, cleanFolder)
 }
 
 func (c *VaultController) CreateNote(folderPath string, noteTitle string) (*model.Note, error) {
-	return c.useCase.CreateNote(folderPath, noteTitle)
+	cleanFolder := filepath.Clean(strings.TrimSpace(folderPath))
+	cleanTitle := strings.TrimSpace(noteTitle)
+	return c.useCase.CreateNote(cleanFolder, cleanTitle)
 }
 
 func (c *VaultController) SearchNotes(query string) ([]model.Note, error) {

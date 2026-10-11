@@ -133,31 +133,91 @@ func (u *vaultUseCaseImpl) RefreshCache() (*model.WorkspaceData, error) {
 	return data, nil
 }
 
-func (u *vaultUseCaseImpl) GetNote(filePath string) (*model.Note, error) {
+func normalizeDriveLetter(p string) string {
+	if len(p) >= 2 && p[1] == ':' {
+		return strings.ToUpper(string(p[0])) + p[1:]
+	}
+	return p
+}
+
+func (u *vaultUseCaseImpl) validatePath(userPath string) (string, error) {
 	u.mu.RLock()
 	ws := u.currentWsPath
 	u.mu.RUnlock()
 
-	cleanFilePath := filepath.ToSlash(filepath.Clean(filePath))
-	parentDir := filepath.ToSlash(filepath.Dir(cleanFilePath))
-
-	folderID := parentDir
-	if ws != "" && (parentDir == ws || strings.EqualFold(parentDir, ws)) {
-		folderID = "root"
+	if strings.TrimSpace(ws) == "" {
+		return "", fmt.Errorf("chưa có workspace nào được thiết lập")
 	}
 
-	note, err := u.repo.ParseNote(cleanFilePath, folderID)
+	cleanWs, err := filepath.Abs(ws)
+	if err != nil {
+		cleanWs = ws
+	}
+	cleanWs = normalizeDriveLetter(filepath.ToSlash(filepath.Clean(cleanWs)))
+
+	trimmed := strings.TrimSpace(userPath)
+	if trimmed == "" || trimmed == "root" || trimmed == "." {
+		return cleanWs, nil
+	}
+
+	target := trimmed
+	if !filepath.IsAbs(target) {
+		target = filepath.Join(cleanWs, target)
+	}
+
+	absTarget, err := filepath.Abs(target)
+	if err != nil {
+		return "", fmt.Errorf("đường dẫn không hợp lệ: %w", err)
+	}
+	cleanTarget := normalizeDriveLetter(filepath.ToSlash(filepath.Clean(absTarget)))
+
+	rel, err := filepath.Rel(filepath.FromSlash(cleanWs), filepath.FromSlash(cleanTarget))
+	if err != nil {
+		return "", fmt.Errorf("truy cập bị từ chối: đường dẫn vượt ra ngoài workspace (%s)", userPath)
+	}
+
+	relSlash := filepath.ToSlash(rel)
+	if relSlash == ".." || strings.HasPrefix(relSlash, "../") {
+		return "", fmt.Errorf("truy cập bị từ chối: đường dẫn vượt ra ngoài ranh giới workspace (%s)", userPath)
+	}
+
+	return cleanTarget, nil
+}
+
+func (u *vaultUseCaseImpl) GetNote(filePath string) (*model.Note, error) {
+	validatedPath, err := u.validatePath(filePath)
 	if err != nil {
 		return nil, err
 	}
-	note.ID = cleanFilePath
+
+	u.mu.RLock()
+	ws := u.currentWsPath
+	u.mu.RUnlock()
+
+	cleanWs := normalizeDriveLetter(filepath.ToSlash(filepath.Clean(ws)))
+	parentDir := normalizeDriveLetter(filepath.ToSlash(filepath.Dir(validatedPath)))
+
+	folderID := parentDir
+	if strings.EqualFold(parentDir, cleanWs) {
+		folderID = "root"
+	}
+
+	note, err := u.repo.ParseNote(validatedPath, folderID)
+	if err != nil {
+		return nil, err
+	}
+	note.ID = validatedPath
 	note.Folder = folderID
 	return note, nil
 }
 
 func (u *vaultUseCaseImpl) SaveNote(filePath string, content string, title string, tags []string) error {
-	cleanPath := filepath.ToSlash(filepath.Clean(filePath))
-	err := u.repo.SaveNote(cleanPath, content, title, tags)
+	validatedPath, err := u.validatePath(filePath)
+	if err != nil {
+		return err
+	}
+
+	err = u.repo.SaveNote(validatedPath, content, title, tags)
 	if err == nil {
 		_, _ = u.RefreshCache()
 	}
@@ -165,20 +225,25 @@ func (u *vaultUseCaseImpl) SaveNote(filePath string, content string, title strin
 }
 
 func (u *vaultUseCaseImpl) CreateFolder(parentPath string, folderName string) error {
-	u.mu.RLock()
-	ws := u.currentWsPath
-	u.mu.RUnlock()
-
-	cleanParent := filepath.ToSlash(filepath.Clean(parentPath))
-	targetParent := cleanParent
-	if targetParent == "" || targetParent == "root" || targetParent == "." || (ws != "" && strings.EqualFold(targetParent, ws)) {
-		targetParent = ws
+	trimmedName := strings.TrimSpace(folderName)
+	if trimmedName == "" {
+		return fmt.Errorf("tên thư mục không được để trống")
 	}
-	if targetParent == "" {
-		return fmt.Errorf("chưa có workspace để tạo thư mục")
+	if strings.Contains(trimmedName, "..") || strings.Contains(trimmedName, "/") || strings.Contains(trimmedName, "\\") {
+		return fmt.Errorf("truy cập bị từ chối: tên thư mục không được chứa ký tự phân cách hoặc '..'")
 	}
 
-	err := u.repo.CreateFolder(targetParent, folderName)
+	validatedParent, err := u.validatePath(parentPath)
+	if err != nil {
+		return err
+	}
+
+	targetDir := filepath.ToSlash(filepath.Join(validatedParent, trimmedName))
+	if _, err := u.validatePath(targetDir); err != nil {
+		return err
+	}
+
+	err = u.repo.CreateFolder(validatedParent, trimmedName)
 	if err == nil {
 		_, _ = u.RefreshCache()
 	}
@@ -186,24 +251,27 @@ func (u *vaultUseCaseImpl) CreateFolder(parentPath string, folderName string) er
 }
 
 func (u *vaultUseCaseImpl) CreateNote(folderPath string, noteTitle string) (*model.Note, error) {
+	trimmedTitle := strings.TrimSpace(noteTitle)
+	if trimmedTitle == "" {
+		return nil, fmt.Errorf("tiêu đề ghi chú không được để trống")
+	}
+	if strings.Contains(trimmedTitle, "..") || strings.Contains(trimmedTitle, "/") || strings.Contains(trimmedTitle, "\\") {
+		return nil, fmt.Errorf("truy cập bị từ chối: tiêu đề ghi chú không được chứa ký tự phân cách hoặc '..'")
+	}
+
+	validatedFolder, err := u.validatePath(folderPath)
+	if err != nil {
+		return nil, err
+	}
+
 	u.mu.RLock()
 	ws := u.currentWsPath
 	u.mu.RUnlock()
 
-	if ws == "" {
-		return nil, fmt.Errorf("chưa có workspace để tạo ghi chú")
-	}
+	cleanWs := normalizeDriveLetter(filepath.ToSlash(filepath.Clean(ws)))
+	isRoot := strings.EqualFold(validatedFolder, cleanWs)
 
-	cleanFolder := filepath.ToSlash(filepath.Clean(folderPath))
-	targetFolder := cleanFolder
-	isRoot := false
-
-	if targetFolder == "" || targetFolder == "root" || targetFolder == "." || strings.EqualFold(targetFolder, ws) {
-		targetFolder = ws
-		isRoot = true
-	}
-
-	note, err := u.repo.CreateNote(targetFolder, noteTitle)
+	note, err := u.repo.CreateNote(validatedFolder, trimmedTitle)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +279,7 @@ func (u *vaultUseCaseImpl) CreateNote(folderPath string, noteTitle string) (*mod
 	if isRoot {
 		note.Folder = "root"
 	} else {
-		note.Folder = filepath.ToSlash(targetFolder)
+		note.Folder = filepath.ToSlash(validatedFolder)
 	}
 	note.ID = filepath.ToSlash(note.ID)
 
