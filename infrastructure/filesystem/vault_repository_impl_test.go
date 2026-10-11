@@ -3,6 +3,7 @@ package filesystem
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -196,3 +197,82 @@ func TestWatcher_IgnoreNonMarkdownAndTempFiles(t *testing.T) {
 		t.Errorf("Expected 0 events for non-markdown and temp files, got %d: %v", count, events)
 	}
 }
+
+func TestAtomicWrite_SaveNoteAndCleanTemp(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "mdvault_atomic_test_*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	repo := NewVaultRepository()
+	testFile := filepath.Join(tempDir, "atomic_note.md")
+
+	// 1. Lưu ghi chú lần đầu
+	content1 := "Nội dung ban đầu"
+	if err := repo.SaveNote(testFile, content1, "Tiêu Đề 1", []string{"tag1"}); err != nil {
+		t.Fatalf("SaveNote failed: %v", err)
+	}
+
+	// Đọc lại kiểm tra
+	data1, err := os.ReadFile(testFile)
+	if err != nil {
+		t.Fatalf("Failed to read saved note: %v", err)
+	}
+	if !strings.Contains(string(data1), content1) {
+		t.Errorf("Saved file does not contain expected content: %s", string(data1))
+	}
+
+	// 2. Ghi đè bằng SaveNote (Atomic overwrite)
+	content2 := "Nội dung ghi đè cập nhật"
+	if err := repo.SaveNote(testFile, content2, "Tiêu Đề 2", []string{"tag2"}); err != nil {
+		t.Fatalf("SaveNote overwrite failed: %v", err)
+	}
+
+	data2, err := os.ReadFile(testFile)
+	if err != nil {
+		t.Fatalf("Failed to read overwritten note: %v", err)
+	}
+	if !strings.Contains(string(data2), content2) {
+		t.Errorf("Overwritten file does not contain new content: %s", string(data2))
+	}
+
+	// 3. Kiểm tra xem có file tạm .mdvault_tmp_* nào bị bỏ quên không
+	entries, err := os.ReadDir(tempDir)
+	if err != nil {
+		t.Fatalf("Failed to read dir: %v", err)
+	}
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), ".mdvault_tmp_") {
+			t.Errorf("Found leftover temp file: %s", entry.Name())
+		}
+	}
+}
+
+func TestCreateNote_AtomicPersistence(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "mdvault_create_test_*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	repo := NewVaultRepository()
+	note, err := repo.CreateNote(tempDir, "Kiến Trúc Clean Architecture")
+	if err != nil {
+		t.Fatalf("CreateNote failed: %v", err)
+	}
+
+	if note == nil {
+		t.Fatal("Expected created note to be non-nil")
+	}
+	if note.Title != "Kiến Trúc Clean Architecture" {
+		t.Errorf("Expected title 'Kiến Trúc Clean Architecture', got '%s'", note.Title)
+	}
+
+	// Kiểm tra file trên đĩa
+	expectedPath := filepath.Join(tempDir, "kiến-trúc-clean-architecture.md")
+	if _, err := os.Stat(expectedPath); os.IsNotExist(err) {
+		t.Errorf("Expected file at %s does not exist", expectedPath)
+	}
+}
+

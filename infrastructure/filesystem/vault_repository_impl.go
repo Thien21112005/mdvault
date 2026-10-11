@@ -1,7 +1,6 @@
 package filesystem
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -320,6 +319,52 @@ func extractExcerpt(lines []string) string {
 	return joined
 }
 
+func atomicWrite(filePath string, data []byte) error {
+	dir := filepath.Dir(filePath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+
+	tmpFile, err := os.CreateTemp(dir, ".mdvault_tmp_*")
+	if err != nil {
+		return err
+	}
+	tmpPath := tmpFile.Name()
+
+	cleanup := true
+	defer func() {
+		if cleanup {
+			_ = os.Remove(tmpPath)
+		}
+	}()
+
+	if _, err := tmpFile.Write(data); err != nil {
+		_ = tmpFile.Close()
+		return err
+	}
+
+	if err := tmpFile.Sync(); err != nil {
+		_ = tmpFile.Close()
+		return err
+	}
+
+	if err := tmpFile.Close(); err != nil {
+		return err
+	}
+
+	var renameErr error
+	for attempts := 0; attempts < 3; attempts++ {
+		renameErr = os.Rename(tmpPath, filePath)
+		if renameErr == nil {
+			cleanup = false
+			return nil
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	return renameErr
+}
+
 func (r *vaultRepositoryImpl) SaveNote(filePath string, content string, title string, tags []string) error {
 	var sb strings.Builder
 	sb.WriteString("---\n")
@@ -337,7 +382,7 @@ func (r *vaultRepositoryImpl) SaveNote(filePath string, content string, title st
 	sb.WriteString(strings.TrimSpace(content))
 	sb.WriteString("\n")
 
-	return os.WriteFile(filePath, []byte(sb.String()), 0644)
+	return atomicWrite(filePath, []byte(sb.String()))
 }
 
 func (r *vaultRepositoryImpl) ScanWorkspace(rootPath string) (*model.WorkspaceData, error) {
@@ -455,14 +500,10 @@ func (r *vaultRepositoryImpl) CreateNote(folderPath string, noteTitle string) (*
 	}
 	filePath := filepath.Join(folderPath, fileName)
 
-	file, err := os.Create(filePath)
-	if err != nil {
+	initialContent := fmt.Sprintf("---\ntitle: \"%s\"\ntags: []\n---\n\n# %s\n\nBắt đầu viết nội dung Ghi chú của bạn tại đây...\n", noteTitle, noteTitle)
+	if err := atomicWrite(filePath, []byte(initialContent)); err != nil {
 		return nil, err
 	}
-	writer := bufio.NewWriter(file)
-	writer.WriteString(fmt.Sprintf("---\ntitle: \"%s\"\ntags: []\n---\n\n# %s\n\nBắt đầu viết nội dung Ghi chú của bạn tại đây...\n", noteTitle, noteTitle))
-	_ = writer.Flush()
-	file.Close()
 
 	return r.ParseNote(filePath, folderPath)
 }
