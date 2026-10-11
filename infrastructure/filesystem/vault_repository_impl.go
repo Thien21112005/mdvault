@@ -22,69 +22,80 @@ import (
 type vaultRepositoryImpl struct {
 	watcher  *fsnotify.Watcher
 	onChange func(path string)
+	done     chan struct{}
 	mu       sync.Mutex
 }
 
 func NewVaultRepository() repository.VaultRepository {
-	w, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Printf("Warning: failed to init fsnotify watcher: %v", err)
-	}
-	repo := &vaultRepositoryImpl{
-		watcher: w,
-	}
-	if w != nil {
-		go repo.listenEvents()
-	}
-	return repo
+	return &vaultRepositoryImpl{}
 }
 
-func (r *vaultRepositoryImpl) listenEvents() {
-	for {
+func (r *vaultRepositoryImpl) stopWatcherLocked() error {
+	if r.done != nil {
 		select {
-		case event, ok := <-r.watcher.Events:
-			if !ok {
-				return
-			}
-			if strings.HasSuffix(strings.ToLower(event.Name), ".md") || event.Op&fsnotify.Create == fsnotify.Create || event.Op&fsnotify.Remove == fsnotify.Remove || event.Op&fsnotify.Rename == fsnotify.Rename {
-				r.mu.Lock()
-				cb := r.onChange
-				r.mu.Unlock()
-				if cb != nil {
-					cb(event.Name)
-				}
-			}
-		case err, ok := <-r.watcher.Errors:
-			if !ok {
-				return
-			}
-			log.Printf("Watcher error: %v", err)
+		case <-r.done:
+			// already closed
+		default:
+			close(r.done)
 		}
+		r.done = nil
 	}
+	var err error
+	if r.watcher != nil {
+		err = r.watcher.Close()
+		r.watcher = nil
+	}
+	return err
+}
+
+func (r *vaultRepositoryImpl) StopWatcher() error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.stopWatcherLocked()
 }
 
 func (r *vaultRepositoryImpl) StartWatcher(rootPath string, onChange func(path string)) error {
 	r.mu.Lock()
-	r.onChange = onChange
-	r.mu.Unlock()
-	return r.UpdateWatchPath(rootPath)
-}
+	defer r.mu.Unlock()
 
-func (r *vaultRepositoryImpl) StopWatcher() error {
-	if r.watcher != nil {
-		return r.watcher.Close()
+	r.onChange = onChange
+
+	cleanRoot := strings.TrimSpace(rootPath)
+	if cleanRoot == "" {
+		return nil
 	}
+
+	// Dọn dẹp an toàn watcher trước đó nếu đang chạy
+	_ = r.stopWatcherLocked()
+
+	w, err := fsnotify.NewWatcher()
+	if err != nil {
+		return fmt.Errorf("không thể khởi tạo fsnotify watcher: %w", err)
+	}
+
+	done := make(chan struct{})
+	r.watcher = w
+	r.done = done
+
+	// Đăng ký toàn bộ thư mục đệ quy trong workspace
+	if err := r.addDirRecursiveLocked(cleanRoot); err != nil {
+		_ = r.stopWatcherLocked()
+		return err
+	}
+
+	go r.listenEvents(w, done)
 	return nil
 }
 
-func (r *vaultRepositoryImpl) UpdateWatchPath(dirPath string) error {
-	if r.watcher == nil {
+func (r *vaultRepositoryImpl) addDirRecursiveLocked(dirPath string) error {
+	if r.watcher == nil || strings.TrimSpace(dirPath) == "" {
 		return nil
 	}
-	for _, w := range r.watcher.WatchList() {
-		_ = r.watcher.Remove(w)
+	absPath, err := filepath.Abs(dirPath)
+	if err != nil {
+		absPath = dirPath
 	}
-	return filepath.WalkDir(dirPath, func(path string, d os.DirEntry, err error) error {
+	return filepath.WalkDir(absPath, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return nil
 		}
@@ -97,6 +108,78 @@ func (r *vaultRepositoryImpl) UpdateWatchPath(dirPath string) error {
 		}
 		return nil
 	})
+}
+
+func (r *vaultRepositoryImpl) UpdateWatchPath(dirPath string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	cleanDir := strings.TrimSpace(dirPath)
+	if cleanDir == "" {
+		return nil
+	}
+
+	if r.watcher == nil {
+		r.mu.Unlock()
+		err := r.StartWatcher(cleanDir, r.onChange)
+		r.mu.Lock()
+		return err
+	}
+
+	for _, w := range r.watcher.WatchList() {
+		_ = r.watcher.Remove(w)
+	}
+	return r.addDirRecursiveLocked(cleanDir)
+}
+
+func (r *vaultRepositoryImpl) listenEvents(w *fsnotify.Watcher, done chan struct{}) {
+	for {
+		select {
+		case <-done:
+			return
+		case event, ok := <-w.Events:
+			if !ok {
+				return
+			}
+			// Tự động nhận diện và theo dõi thư mục mới tạo từ bên ngoài
+			if event.Op&fsnotify.Create == fsnotify.Create {
+				if info, err := os.Stat(event.Name); err == nil && info.IsDir() {
+					r.mu.Lock()
+					_ = r.addDirRecursiveLocked(event.Name)
+					r.mu.Unlock()
+				}
+			}
+
+			// Chỉ thông báo sự kiện liên quan đến file markdown hoặc cấu trúc thư mục
+			if isRelevantWatchEvent(event) {
+				r.mu.Lock()
+				cb := r.onChange
+				r.mu.Unlock()
+				if cb != nil {
+					cb(event.Name)
+				}
+			}
+		case err, ok := <-w.Errors:
+			if !ok {
+				return
+			}
+			log.Printf("Watcher error: %v", err)
+		}
+	}
+}
+
+func isRelevantWatchEvent(event fsnotify.Event) bool {
+	base := filepath.Base(event.Name)
+	if strings.HasPrefix(base, ".") || strings.HasSuffix(base, ".tmp") || strings.HasSuffix(base, ".swp") {
+		return false
+	}
+	if strings.HasSuffix(strings.ToLower(event.Name), ".md") || strings.HasSuffix(strings.ToLower(event.Name), ".markdown") {
+		return true
+	}
+	if event.Op&(fsnotify.Create|fsnotify.Remove|fsnotify.Rename) != 0 {
+		return true
+	}
+	return false
 }
 
 func (r *vaultRepositoryImpl) ParseNote(filePath string, folderID string) (*model.Note, error) {
