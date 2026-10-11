@@ -325,19 +325,20 @@ git commit -m "test(backend): add table-driven test suites and race condition ve
 **Description:** Rà soát lại toàn bộ codebase sau khi hoàn thành theo tiêu chuẩn của skill `code-review`: Trục 1 (Standards - Clean Architecture, Go Concurrency Best Practices) và Trục 2 (Spec - Đáp ứng đầy đủ các yêu cầu trong SRS và PRB).
 
 **Acceptance criteria:**
-- [ ] Báo cáo nghiệm thu 2 trục đạt trạng thái PASS.
-- [ ] Biên dịch `wails build` hoặc `go build` thành công hoàn toàn.
+- [x] Báo cáo nghiệm thu 2 trục đạt trạng thái PASS.
+- [x] Biên dịch `wails build` hoặc `go build` thành công hoàn toàn.
 
 **Verification & Testing:**
-- [ ] `go vet ./...` (0 warnings)
-- [ ] `go build -v .` (exit code 0)
+- [x] `go vet ./...` (0 warnings).
+- [x] `go build -v .` (exit code 0).
+- [x] `go test -race ./...` (17 test suites PASS 100%).
 
 **Git Commit:**
 ```bash
 git add tasks/2026-10-11/1-backend-hardening-and-refactor/
 git commit -m "chore(review): complete two-axis engineering audit and finalize backend hardening"
 ```
-*(Trạng thái: ⏳ Chờ commit)*
+*(Trạng thái: ✅ Đã commit `36174d5`)*
 
 **Dependencies:** Task 9  
 **Estimated scope:** Review & Documentation
@@ -352,4 +353,4 @@ git commit -m "chore(review): complete two-axis engineering audit and finalize b
 | **Phase 2** | Atomic Persistence & Frontmatter | 2 Tasks (T3-T4) | ✅ Hoàn thành (2/2) |
 | **Phase 3** | In-Memory Cache & Path Normalization | 2 Tasks (T5-T6) | ✅ Hoàn thành (2/2) |
 | **Phase 4** | Security Hardening & Core CRUD | 2 Tasks (T7-T8) | ✅ Hoàn thành (2/2) |
-| **Phase 5** | Comprehensive Testing & Code Review | 2 Tasks (T9-T10) | ⏳ Sẵn sàng thực hiện |
+| **Phase 5** | Comprehensive Testing & Code Review | 2 Tasks (T9-T10) | ✅ Hoàn thành (2/2) |
