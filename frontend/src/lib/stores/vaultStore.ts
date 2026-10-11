@@ -84,9 +84,9 @@ export function updateWorkspaceState(data: WorkspaceData) {
   }
 }
 
-export async function createNewNote(title: string = 'Untitled Note'): Promise<boolean> {
+export async function createNewNote(title: string = 'Untitled Note', targetFolder?: string): Promise<boolean> {
   const currentWs = get(rootPath)
-  const targetFolder = get(selectedFolderId) || currentWs || 'root'
+  const target = targetFolder || get(selectedFolderId) || currentWs || 'root'
   if (!currentWs && get(folders).length === 0) {
     toast.warning('Chưa mở Workspace', 'Vui lòng chọn thư mục lưu trữ để bắt đầu tạo ghi chú!', {
       action: {
@@ -98,7 +98,7 @@ export async function createNewNote(title: string = 'Untitled Note'): Promise<bo
     })
     return false
   }
-  const note = await WailsAdapter.createNote(targetFolder, title)
+  const note = await WailsAdapter.createNote(target, title)
   if (note) {
     await loadInitialWorkspace()
     selectedNoteId.set(note.id)
@@ -107,9 +107,9 @@ export async function createNewNote(title: string = 'Untitled Note'): Promise<bo
   return false
 }
 
-export async function createNewFolder(name: string): Promise<boolean> {
+export async function createNewFolder(name: string, targetParentFolder?: string): Promise<boolean> {
   const currentWs = get(rootPath)
-  const targetParent = get(selectedFolderId) || currentWs || 'root'
+  const targetParent = targetParentFolder || get(selectedFolderId) || currentWs || 'root'
   if (!currentWs && get(folders).length === 0) {
     toast.warning('Chưa mở Workspace', 'Vui lòng chọn thư mục lưu trữ để bắt đầu tạo thư mục!', {
       action: {

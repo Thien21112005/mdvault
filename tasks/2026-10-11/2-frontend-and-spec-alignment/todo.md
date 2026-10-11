@@ -120,34 +120,35 @@ git commit -m "feat(notes): add delete and rename actions with modal confirmatio
 4. "Delete Folder" (Xóa thư mục kèm cảnh báo số lượng tệp bên trong)
 
 **Acceptance criteria:**
-- [ ] Mỗi thư mục trên cây phân cấp hiển thị nút menu hoặc hành động nhanh khi hover.
-- [ ] Đổi tên thư mục inline hoặc qua modal mượt mà, tự động cập nhật lại cây thư mục.
-- [ ] Xóa thư mục hiển thị cảnh báo nguy hiểm rõ ràng (cấm xóa nếu là root vault).
-- [ ] Hỗ trợ tạo note/thư mục con đúng vị trí thư mục được chọn.
+- [x] Mỗi thư mục trên cây phân cấp hiển thị nút menu hoặc hành động nhanh khi hover.
+- [x] Đổi tên thư mục inline hoặc qua modal mượt mà, tự động cập nhật lại cây thư mục.
+- [x] Xóa thư mục hiển thị cảnh báo nguy hiểm rõ ràng (cấm xóa nếu là root vault).
+- [x] Hỗ trợ tạo note/thư mục con đúng vị trí thư mục được chọn.
 
 **Verification & Testing:**
-- [ ] Type check: `npm run check` (0 errors, 0 warnings).
-- [ ] Thử nghiệm tạo thư mục con, đổi tên và xóa thư mục con, xác minh cây thư mục cập nhật tức thì.
+- [x] Type check: `npm run check` (0 errors, 0 warnings).
+- [x] Thử nghiệm tạo thư mục con, đổi tên và xóa thư mục con, xác minh cây thư mục cập nhật tức thì.
 
 **Git Commit:**
 ```bash
-git add frontend/src/components/sidebar/Sidebar.svelte frontend/src/components/sidebar/FolderTreeItem.svelte
+git add frontend/src/components/sidebar/Sidebar.svelte frontend/src/components/sidebar/FolderTreeItem.svelte frontend/src/lib/stores/vaultStore.ts
 git commit -m "feat(sidebar): add folder context actions for rename and safe deletion"
 ```
-*(Trạng thái: ⏳ Chưa thực hiện)*
+*(Trạng thái: ✅ Đã commit `e8a18ad`)*
 
 **Dependencies:** Task 3  
 **Files likely touched:**
 - `frontend/src/components/sidebar/Sidebar.svelte`
 - `frontend/src/components/sidebar/FolderTreeItem.svelte`
+- `frontend/src/lib/stores/vaultStore.ts`
 
-**Estimated scope:** Medium (2 files)
+**Estimated scope:** Medium (3 files)
 
 ---
 
 ## 🛑 Checkpoint: Sau Phase 2 (Full CRUD In UI)
-- [ ] Người dùng có thể tạo, đọc, lưu, đổi tên và xóa cả Ghi Chú và Thư Mục hoàn toàn từ UI.
-- [ ] Các thao tác xóa đều có lớp bảo vệ xác nhận kính mờ, không gây xóa nhầm dữ liệu.
+- [x] Người dùng có thể tạo, đọc, lưu, đổi tên và xóa cả Ghi Chú và Thư Mục hoàn toàn từ UI.
+- [x] Các thao tác xóa đều có lớp bảo vệ xác nhận kính mờ, không gây xóa nhầm dữ liệu.
 
 ---
 

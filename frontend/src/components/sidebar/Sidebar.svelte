@@ -22,6 +22,7 @@
   } from '$lib/stores/vaultStore'
   import FolderTreeItem from './FolderTreeItem.svelte'
   import { toast } from '$lib/stores/toastStore'
+  import { switchView, setEditorMode } from '$lib/stores/viewStore'
 
 
   let isCreatingFolder = $state(false)
@@ -72,6 +73,8 @@
     const title = newNoteTitle.trim()
     const success = await createNewNote(title)
     if (success) {
+      switchView('list')
+      setEditorMode('edit')
       toast.success('Note Created', `Created note "${title}"`)
     }
     newNoteTitle = ''
