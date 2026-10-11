@@ -86,21 +86,21 @@ git commit -m "feat(store): expose full CRUD actions in wailsAdapter and vaultSt
 3. Bổ sung các lệnh "Delete Note" và "Rename Note" vào `CommandPalette.svelte`.
 
 **Acceptance criteria:**
-- [ ] Người dùng có thể đổi tên ghi chú nhanh thông qua popover/dialog hoặc đổi tên trực tiếp.
-- [ ] Thao tác xóa ghi chú kích hoạt popover xác nhận tinh tế (không dùng `window.confirm`).
-- [ ] Sau khi xác nhận xóa, file biến mất trên danh sách và hiển thị Toast thông báo thành công.
-- [ ] `CommandPalette` có các hành động thao tác với note hiện tại.
+- [x] Người dùng có thể đổi tên ghi chú nhanh thông qua popover/dialog hoặc đổi tên trực tiếp.
+- [x] Thao tác xóa ghi chú kích hoạt popover xác nhận tinh tế (không dùng `window.confirm`).
+- [x] Sau khi xác nhận xóa, file biến mất trên danh sách và hiển thị Toast thông báo thành công.
+- [x] `CommandPalette` có các hành động thao tác với note hiện tại.
 
 **Verification & Testing:**
-- [ ] Type check: `npm run check` (0 errors, 0 warnings).
-- [ ] Thử nghiệm tạo note tạm thời, đổi tên và xóa thử nghiệm, kiểm tra file trên đĩa biến mất chuẩn xác.
+- [x] Type check: `npm run check` (0 errors, 0 warnings).
+- [x] Thử nghiệm tạo note tạm thời, đổi tên và xóa thử nghiệm, kiểm tra file trên đĩa biến mất chuẩn xác.
 
 **Git Commit:**
 ```bash
-git add frontend/src/components/note/NotesList.svelte frontend/src/components/note/NoteEditor.svelte frontend/src/components/layout/CommandPalette.svelte
+git add frontend/src/components/ui/ConfirmModal.svelte frontend/src/components/note/NotesList.svelte frontend/src/components/note/NoteEditor.svelte frontend/src/components/layout/CommandPalette.svelte
 git commit -m "feat(notes): add delete and rename actions with modal confirmation for notes"
 ```
-*(Trạng thái: ⏳ Chưa thực hiện)*
+*(Trạng thái: ✅ Đã commit `f95531d`)*
 
 **Dependencies:** Task 2  
 **Files likely touched:**

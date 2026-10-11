@@ -10,9 +10,11 @@
     FolderOpen,
     Sparkles,
     CornerDownLeft,
-    X
+    X,
+    Trash2,
+    Edit3
   } from '@lucide/svelte'
-  import { notes, selectedNoteId, createNewNote, openWorkspaceDialog } from '$lib/stores/vaultStore'
+  import { notes, selectedNote, selectedNoteId, createNewNote, openWorkspaceDialog, deleteNote, renameNote } from '$lib/stores/vaultStore'
   import {
     viewMode,
     switchView,
@@ -23,6 +25,11 @@
   } from '$lib/stores/viewStore'
   import { isDark, toggleTheme } from '$lib/stores/themeStore'
   import { toast } from '$lib/stores/toastStore'
+  import ConfirmModal from '../ui/ConfirmModal.svelte'
+  import type { Note } from '$lib/types/domain'
+
+  let noteToDelete = $state<Note | null>(null)
+  let noteToRename = $state<Note | null>(null)
 
   let query = $state('')
   let selectedIndex = $state(0)
@@ -110,6 +117,36 @@
       run: async () => {
         closeCommandPalette()
         await openWorkspaceDialog()
+      }
+    },
+    {
+      id: 'cmd-rename-note',
+      type: 'action' as const,
+      title: 'Rename Active Note',
+      subtitle: $selectedNote ? `Rename "${$selectedNote.title}"` : 'Rename currently open note',
+      icon: Edit3,
+      run: () => {
+        closeCommandPalette()
+        if ($selectedNote) {
+          noteToRename = $selectedNote
+        } else {
+          toast.warning('No Active Note', 'Please select a note to rename')
+        }
+      }
+    },
+    {
+      id: 'cmd-delete-note',
+      type: 'action' as const,
+      title: 'Delete Active Note',
+      subtitle: $selectedNote ? `Permanently remove "${$selectedNote.title}"` : 'Delete currently open note',
+      icon: Trash2,
+      run: () => {
+        closeCommandPalette()
+        if ($selectedNote) {
+          noteToDelete = $selectedNote
+        } else {
+          toast.warning('No Active Note', 'Please select a note to delete')
+        }
       }
     }
   ]
@@ -355,4 +392,57 @@
       </div>
     </div>
   </div>
+{/if}
+
+<!-- Modals triggered from Command Palette -->
+{#if noteToDelete}
+  <ConfirmModal
+    open={Boolean(noteToDelete)}
+    destructive={true}
+    title="Delete Note"
+    description={`Are you sure you want to permanently delete "${noteToDelete?.title || 'this note'}"? This action cannot be undone.`}
+    confirmText="Delete Note"
+    onConfirm={async () => {
+      if (noteToDelete) {
+        const title = noteToDelete.title
+        const ok = await deleteNote(noteToDelete.id)
+        noteToDelete = null
+        if (ok) {
+          toast.success('Note Deleted', `"${title}" has been deleted`)
+        } else {
+          toast.error('Delete Failed', 'Could not delete note from disk')
+        }
+      }
+    }}
+    onCancel={() => {
+      noteToDelete = null
+    }}
+  />
+{/if}
+
+{#if noteToRename}
+  <ConfirmModal
+    open={Boolean(noteToRename)}
+    mode="prompt"
+    title="Rename Note"
+    initialValue={noteToRename?.title || ''}
+    placeholder="Enter new note title..."
+    confirmText="Rename"
+    onConfirm={async (newTitle?: string) => {
+      if (noteToRename && newTitle && newTitle.trim()) {
+        const updated = await renameNote(noteToRename.id, newTitle.trim())
+        noteToRename = null
+        if (updated) {
+          toast.success('Note Renamed', `Renamed to "${updated.title}"`)
+        } else {
+          toast.error('Rename Failed', 'Could not rename note on disk')
+        }
+      } else {
+        noteToRename = null
+      }
+    }}
+    onCancel={() => {
+      noteToRename = null
+    }}
+  />
 {/if}

@@ -18,12 +18,14 @@
     Quote,
     Link,
     Minus,
-    AlertCircle
+    AlertCircle,
+    Trash2
   } from '@lucide/svelte'
-  import { selectedNote, saveActiveNote, notes, selectedNoteId } from '$lib/stores/vaultStore'
+  import { selectedNote, saveActiveNote, notes, selectedNoteId, deleteNote, renameNote } from '$lib/stores/vaultStore'
   import { editorMode, setEditorMode, isEditorDirty } from '$lib/stores/viewStore'
   import { renderMarkdown } from '$lib/utils/markdown'
   import { toast } from '$lib/stores/toastStore'
+  import ConfirmModal from '../ui/ConfirmModal.svelte'
 
   let editTitle = $state('')
   let editTagsList = $state<string[]>([])
@@ -131,6 +133,45 @@
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
       e.preventDefault()
       handleSave()
+    }
+  }
+
+  // Note CRUD modals state & handlers
+  let isDeleteModalOpen = $state(false)
+  let isRenameModalOpen = $state(false)
+
+  function openDeleteModal() {
+    if (!$selectedNote) return
+    isDeleteModalOpen = true
+  }
+
+  async function handleConfirmDelete() {
+    if (!$selectedNote) return
+    const title = $selectedNote.title
+    const ok = await deleteNote($selectedNote.id)
+    isDeleteModalOpen = false
+    if (ok) {
+      toast.success('Note Deleted', `"${title}" has been deleted`)
+    } else {
+      toast.error('Delete Failed', 'Could not delete note from disk')
+    }
+  }
+
+  function openRenameModal() {
+    if (!$selectedNote) return
+    isRenameModalOpen = true
+  }
+
+  async function handleConfirmRename(newTitle?: string) {
+    if (!$selectedNote || !newTitle || !newTitle.trim()) return
+    const cleanTitle = newTitle.trim()
+    const updated = await renameNote($selectedNote.id, cleanTitle)
+    isRenameModalOpen = false
+    if (updated) {
+      editTitle = updated.title
+      toast.success('Note Renamed', `Renamed to "${updated.title}"`)
+    } else {
+      toast.error('Rename Failed', 'Could not rename note on disk')
     }
   }
 
@@ -455,6 +496,27 @@
             {/if}
           </button>
         {/if}
+
+        <div class="h-4 w-px bg-[var(--border-subtle)]"></div>
+
+        <!-- Note Actions (Rename & Delete) -->
+        <button
+          onclick={openRenameModal}
+          class="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)] border border-transparent hover:border-[var(--border-subtle)] transition-all pressable"
+          title="Rename Note"
+          aria-label="Rename Note"
+        >
+          <Edit3 size={13} strokeWidth={2.2} />
+        </button>
+
+        <button
+          onclick={openDeleteModal}
+          class="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all pressable"
+          title="Delete Note"
+          aria-label="Delete Note"
+        >
+          <Trash2 size={13} strokeWidth={2.2} />
+        </button>
       </div>
     </div>
 
@@ -595,3 +657,31 @@
     {/if}
   {/if}
 </div>
+
+<!-- Reusable Note Action Modals -->
+{#if $selectedNote}
+  <ConfirmModal
+    open={isDeleteModalOpen}
+    destructive={true}
+    title="Delete Note"
+    description={`Are you sure you want to permanently delete "${$selectedNote.title || 'this note'}"? This action cannot be undone.`}
+    confirmText="Delete Note"
+    onConfirm={handleConfirmDelete}
+    onCancel={() => {
+      isDeleteModalOpen = false
+    }}
+  />
+
+  <ConfirmModal
+    open={isRenameModalOpen}
+    mode="prompt"
+    title="Rename Note"
+    initialValue={$selectedNote.title || ''}
+    placeholder="Enter new note title..."
+    confirmText="Rename"
+    onConfirm={handleConfirmRename}
+    onCancel={() => {
+      isRenameModalOpen = false
+    }}
+  />
+{/if}

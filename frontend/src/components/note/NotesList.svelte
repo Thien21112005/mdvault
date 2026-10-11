@@ -8,7 +8,8 @@
     X,
     Plus,
     SearchX,
-    Clock
+    Clock,
+    Trash2
   } from '@lucide/svelte'
   import {
     filteredNotes,
@@ -17,10 +18,14 @@
     selectedTag,
     searchQuery,
     createNewNote,
+    deleteNote,
     type SortOption
   } from '$lib/stores/vaultStore'
+  import type { Note } from '$lib/types/domain'
   import { viewMode } from '$lib/stores/viewStore'
   import CustomDropdown, { type DropdownOption } from '../ui/CustomDropdown.svelte'
+  import ConfirmModal from '../ui/ConfirmModal.svelte'
+  import { toast } from '$lib/stores/toastStore'
 
   const sortOptions: DropdownOption<SortOption>[] = [
     { value: 'newest', label: 'Newest', icon: Clock },
@@ -38,6 +43,8 @@
   function handleQuickNewNote() {
     createNewNote('Untitled Note')
   }
+
+  let noteToDelete = $state<Note | null>(null)
 
   function clearFilters() {
     selectedTag.set(null)
@@ -142,8 +149,11 @@
     {:else}
       {#each $filteredNotes as note (note.id)}
         {@const isSelected = $selectedNoteId === note.id}
-        <button
+        <div
+          role="button"
+          tabindex="0"
           onclick={() => handleSelectNote(note.id)}
+          onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && handleSelectNote(note.id)}
           class="w-full text-left p-3 rounded-xl transition-all duration-150 ease-[var(--ease-apple)] border relative overflow-hidden group cursor-pointer pressable {isSelected ? 'bg-[var(--accent-soft)] border-[var(--accent-primary)]/30 shadow-[var(--shadow-glass)]' : 'bg-[var(--bg-surface-active)] hover:bg-[var(--bg-surface-hover)] border-transparent hover:border-[var(--border-subtle)] hover:-translate-y-[1px]'}"
         >
           <!-- Glowing Left Accent Bar when Selected -->
@@ -151,11 +161,22 @@
             <div class="absolute left-0 top-2 bottom-2 w-[3px] bg-[var(--accent-primary)] rounded-r-full shadow-[0_0_10px_var(--accent-glow)]"></div>
           {/if}
 
-          <!-- Note Title -->
+          <!-- Note Title & Hover Quick Delete Action -->
           <div class="flex items-start justify-between">
-            <span class="font-semibold text-[13px] tracking-tight truncate w-full {isSelected ? 'text-[var(--text-primary)] font-bold' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}">
+            <span class="font-semibold text-[13px] tracking-tight truncate flex-1 {isSelected ? 'text-[var(--text-primary)] font-bold' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}">
               {note.title || 'Untitled Note'}
             </span>
+            <button
+              onclick={(e) => {
+                e.stopPropagation()
+                noteToDelete = note
+              }}
+              class="opacity-0 group-hover:opacity-100 p-1 rounded-md text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10 transition-all pressable ml-1.5 shrink-0"
+              title="Delete note"
+              aria-label="Delete note"
+            >
+              <Trash2 size={12} strokeWidth={2.2} />
+            </button>
           </div>
 
           <!-- Note Excerpt -->
@@ -184,8 +205,32 @@
               </div>
             {/if}
           </div>
-        </button>
+        </div>
       {/each}
     {/if}
   </div>
 </div>
+
+<!-- Delete Note Confirmation Modal -->
+<ConfirmModal
+  open={Boolean(noteToDelete)}
+  destructive={true}
+  title="Delete Note"
+  description={`Are you sure you want to permanently delete "${noteToDelete?.title || 'this note'}"? This action cannot be undone.`}
+  confirmText="Delete Note"
+  onConfirm={async () => {
+    if (noteToDelete) {
+      const title = noteToDelete.title
+      const ok = await deleteNote(noteToDelete.id)
+      noteToDelete = null
+      if (ok) {
+        toast.success('Note Deleted', `"${title}" has been deleted`)
+      } else {
+        toast.error('Delete Failed', 'Could not delete note from disk')
+      }
+    }
+  }}
+  onCancel={() => {
+    noteToDelete = null
+  }}
+/>
