@@ -112,3 +112,87 @@ func TestWatcher_AutoAddSubdirectory(t *testing.T) {
 
 	t.Logf("Total events caught during subdir creation: %d", total)
 }
+
+func TestWatcher_DebounceCoalescing(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "mdvault_debounce_test_*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	repo := NewVaultRepository()
+
+	var mu sync.Mutex
+	callbackCount := 0
+	onChange := func(path string) {
+		mu.Lock()
+		callbackCount++
+		mu.Unlock()
+	}
+
+	if err := repo.StartWatcher(tempDir, onChange); err != nil {
+		t.Fatalf("StartWatcher failed: %v", err)
+	}
+	defer repo.StopWatcher()
+
+	testFile := filepath.Join(tempDir, "debounce_note.md")
+
+	// Ghi liên tục 5 lần vào cùng 1 file trong vòng 20ms
+	for i := 0; i < 5; i++ {
+		_ = os.WriteFile(testFile, []byte("Content update"), 0644)
+		time.Sleep(4 * time.Millisecond)
+	}
+
+	// Đợi debounce (50ms) hoàn tất + buffer
+	time.Sleep(200 * time.Millisecond)
+
+	mu.Lock()
+	count := callbackCount
+	mu.Unlock()
+
+	// Nhờ debounce 50ms, 5 lần ghi dồn dập phải được gom lại
+	if count > 2 {
+		t.Errorf("Expected at most 1-2 callback events due to debouncing, got %d", count)
+	} else {
+		t.Logf("Debounce successfully coalesced rapid writes: callbackCount = %d", count)
+	}
+}
+
+func TestWatcher_IgnoreNonMarkdownAndTempFiles(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "mdvault_ignore_test_*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	repo := NewVaultRepository()
+
+	var mu sync.Mutex
+	events := []string{}
+	onChange := func(path string) {
+		mu.Lock()
+		events = append(events, path)
+		mu.Unlock()
+	}
+
+	if err := repo.StartWatcher(tempDir, onChange); err != nil {
+		t.Fatalf("StartWatcher failed: %v", err)
+	}
+	defer repo.StopWatcher()
+
+	// Tạo các file tạm hoặc file không phải markdown
+	_ = os.WriteFile(filepath.Join(tempDir, "test.tmp"), []byte("temp"), 0644)
+	_ = os.WriteFile(filepath.Join(tempDir, "test.swp"), []byte("swap"), 0644)
+	_ = os.WriteFile(filepath.Join(tempDir, ".hidden"), []byte("hidden"), 0644)
+	_ = os.WriteFile(filepath.Join(tempDir, "image.png"), []byte("binary"), 0644)
+
+	time.Sleep(150 * time.Millisecond)
+
+	mu.Lock()
+	count := len(events)
+	mu.Unlock()
+
+	if count > 0 {
+		t.Errorf("Expected 0 events for non-markdown and temp files, got %d: %v", count, events)
+	}
+}

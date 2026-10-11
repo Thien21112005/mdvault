@@ -20,17 +20,28 @@ import (
 )
 
 type vaultRepositoryImpl struct {
-	watcher  *fsnotify.Watcher
-	onChange func(path string)
-	done     chan struct{}
-	mu       sync.Mutex
+	watcher        *fsnotify.Watcher
+	onChange       func(path string)
+	done           chan struct{}
+	debounceLock   sync.Mutex
+	debounceTimers map[string]*time.Timer
+	mu             sync.Mutex
 }
 
 func NewVaultRepository() repository.VaultRepository {
-	return &vaultRepositoryImpl{}
+	return &vaultRepositoryImpl{
+		debounceTimers: make(map[string]*time.Timer),
+	}
 }
 
 func (r *vaultRepositoryImpl) stopWatcherLocked() error {
+	r.debounceLock.Lock()
+	for p, t := range r.debounceTimers {
+		t.Stop()
+		delete(r.debounceTimers, p)
+	}
+	r.debounceLock.Unlock()
+
 	if r.done != nil {
 		select {
 		case <-r.done:
@@ -150,14 +161,9 @@ func (r *vaultRepositoryImpl) listenEvents(w *fsnotify.Watcher, done chan struct
 				}
 			}
 
-			// Chỉ thông báo sự kiện liên quan đến file markdown hoặc cấu trúc thư mục
+			// Chỉ thông báo sự kiện liên quan đến file markdown hoặc cấu trúc thư mục (qua Debounce 50ms)
 			if isRelevantWatchEvent(event) {
-				r.mu.Lock()
-				cb := r.onChange
-				r.mu.Unlock()
-				if cb != nil {
-					cb(event.Name)
-				}
+				r.triggerDebounced(event.Name)
 			}
 		case err, ok := <-w.Errors:
 			if !ok {
@@ -168,15 +174,46 @@ func (r *vaultRepositoryImpl) listenEvents(w *fsnotify.Watcher, done chan struct
 	}
 }
 
+func (r *vaultRepositoryImpl) triggerDebounced(path string) {
+	r.debounceLock.Lock()
+	defer r.debounceLock.Unlock()
+
+	if r.debounceTimers == nil {
+		r.debounceTimers = make(map[string]*time.Timer)
+	}
+
+	if timer, exists := r.debounceTimers[path]; exists {
+		timer.Stop()
+	}
+
+	r.debounceTimers[path] = time.AfterFunc(50*time.Millisecond, func() {
+		r.debounceLock.Lock()
+		delete(r.debounceTimers, path)
+		r.debounceLock.Unlock()
+
+		r.mu.Lock()
+		cb := r.onChange
+		r.mu.Unlock()
+
+		if cb != nil {
+			cb(path)
+		}
+	})
+}
+
 func isRelevantWatchEvent(event fsnotify.Event) bool {
 	base := filepath.Base(event.Name)
 	if strings.HasPrefix(base, ".") || strings.HasSuffix(base, ".tmp") || strings.HasSuffix(base, ".swp") {
 		return false
 	}
-	if strings.HasSuffix(strings.ToLower(event.Name), ".md") || strings.HasSuffix(strings.ToLower(event.Name), ".markdown") {
+	ext := strings.ToLower(filepath.Ext(base))
+	if ext == ".md" || ext == ".markdown" {
 		return true
 	}
-	if event.Op&(fsnotify.Create|fsnotify.Remove|fsnotify.Rename) != 0 {
+	if info, err := os.Stat(event.Name); err == nil {
+		return info.IsDir()
+	}
+	if ext == "" && event.Op&(fsnotify.Remove|fsnotify.Rename) != 0 {
 		return true
 	}
 	return false
@@ -300,16 +337,7 @@ func (r *vaultRepositoryImpl) SaveNote(filePath string, content string, title st
 	sb.WriteString(strings.TrimSpace(content))
 	sb.WriteString("\n")
 
-	err = os.WriteFile(filePath, []byte(sb.String()), 0644)
-	if err == nil {
-		r.mu.Lock()
-		cb := r.onChange
-		r.mu.Unlock()
-		if cb != nil {
-			cb(filePath)
-		}
-	}
-	return err
+	return os.WriteFile(filePath, []byte(sb.String()), 0644)
 }
 
 func (r *vaultRepositoryImpl) ScanWorkspace(rootPath string) (*model.WorkspaceData, error) {
@@ -407,14 +435,12 @@ func (r *vaultRepositoryImpl) ScanWorkspace(rootPath string) (*model.WorkspaceDa
 func (r *vaultRepositoryImpl) CreateFolder(parentPath string, folderName string) error {
 	newPath := filepath.Join(parentPath, folderName)
 	err := os.MkdirAll(newPath, 0755)
-	if err == nil && r.watcher != nil {
-		_ = r.watcher.Add(newPath)
+	if err == nil {
 		r.mu.Lock()
-		cb := r.onChange
-		r.mu.Unlock()
-		if cb != nil {
-			cb(newPath)
+		if r.watcher != nil {
+			_ = r.watcher.Add(newPath)
 		}
+		r.mu.Unlock()
 	}
 	return err
 }
@@ -438,12 +464,6 @@ func (r *vaultRepositoryImpl) CreateNote(folderPath string, noteTitle string) (*
 	_ = writer.Flush()
 	file.Close()
 
-	r.mu.Lock()
-	cb := r.onChange
-	r.mu.Unlock()
-	if cb != nil {
-		cb(filePath)
-	}
 	return r.ParseNote(filePath, folderPath)
 }
 
