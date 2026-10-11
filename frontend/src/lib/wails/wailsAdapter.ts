@@ -69,6 +69,77 @@ export class WailsAdapter {
     }
   }
 
+  static async deleteNote(filePath: string): Promise<boolean> {
+    try {
+      const bindings = VaultBindings as any
+      if (typeof bindings.DeleteNote === 'function') {
+        await bindings.DeleteNote(filePath)
+      } else if (typeof (window as any).go?.controller?.VaultController?.DeleteNote === 'function') {
+        await (window as any).go.controller.VaultController.DeleteNote(filePath)
+      } else {
+        console.warn('DeleteNote RPC method not found in bindings or window.go')
+        return false
+      }
+      return true
+    } catch (e) {
+      console.error('Lỗi khi xóa ghi chú:', e)
+      return false
+    }
+  }
+
+  static async deleteFolder(folderPath: string): Promise<boolean> {
+    try {
+      const bindings = VaultBindings as any
+      if (typeof bindings.DeleteFolder === 'function') {
+        await bindings.DeleteFolder(folderPath)
+      } else if (typeof (window as any).go?.controller?.VaultController?.DeleteFolder === 'function') {
+        await (window as any).go.controller.VaultController.DeleteFolder(folderPath)
+      } else {
+        console.warn('DeleteFolder RPC method not found in bindings or window.go')
+        return false
+      }
+      return true
+    } catch (e) {
+      console.error('Lỗi khi xóa thư mục:', e)
+      return false
+    }
+  }
+
+  static async renameNote(oldPath: string, newTitle: string): Promise<Note | null> {
+    try {
+      const bindings = VaultBindings as any
+      if (typeof bindings.RenameNote === 'function') {
+        return (await bindings.RenameNote(oldPath, newTitle)) as unknown as Note
+      } else if (typeof (window as any).go?.controller?.VaultController?.RenameNote === 'function') {
+        return (await (window as any).go.controller.VaultController.RenameNote(oldPath, newTitle)) as unknown as Note
+      } else {
+        console.warn('RenameNote RPC method not found in bindings or window.go')
+        return null
+      }
+    } catch (e) {
+      console.error('Lỗi khi đổi tên ghi chú:', e)
+      return null
+    }
+  }
+
+  static async renameFolder(oldPath: string, newName: string): Promise<boolean> {
+    try {
+      const bindings = VaultBindings as any
+      if (typeof bindings.RenameFolder === 'function') {
+        await bindings.RenameFolder(oldPath, newName)
+      } else if (typeof (window as any).go?.controller?.VaultController?.RenameFolder === 'function') {
+        await (window as any).go.controller.VaultController.RenameFolder(oldPath, newName)
+      } else {
+        console.warn('RenameFolder RPC method not found in bindings or window.go')
+        return false
+      }
+      return true
+    } catch (e) {
+      console.error('Lỗi khi đổi tên thư mục:', e)
+      return false
+    }
+  }
+
   static onFileChange(callback: (changedPath: string) => void): () => void {
     EventsOn('on-file-change', callback)
     return () => EventsOff('on-file-change')

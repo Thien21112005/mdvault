@@ -137,6 +137,63 @@ export async function saveActiveNote(id: string, content: string, title: string,
   }
 }
 
+export async function deleteNote(id: string): Promise<boolean> {
+  const currentNotes = get(notes)
+  const currentIndex = currentNotes.findIndex(n => n.id === id)
+  const success = await WailsAdapter.deleteNote(id)
+  if (success) {
+    await loadInitialWorkspace()
+    const updatedNotes = get(notes)
+    if (get(selectedNoteId) === id) {
+      if (updatedNotes.length > 0) {
+        const nextIndex = Math.min(Math.max(0, currentIndex), updatedNotes.length - 1)
+        selectedNoteId.set(updatedNotes[nextIndex]?.id || updatedNotes[0].id)
+      } else {
+        selectedNoteId.set(null)
+      }
+    }
+    return true
+  }
+  return false
+}
+
+export async function deleteFolder(path: string): Promise<boolean> {
+  const currentFolder = get(selectedFolderId)
+  const success = await WailsAdapter.deleteFolder(path)
+  if (success) {
+    if (currentFolder === path || (currentFolder && currentFolder.startsWith(path))) {
+      selectedFolderId.set(null)
+    }
+    await loadInitialWorkspace()
+    return true
+  }
+  return false
+}
+
+export async function renameNote(oldPath: string, newTitle: string): Promise<Note | null> {
+  const updatedNote = await WailsAdapter.renameNote(oldPath, newTitle)
+  if (updatedNote) {
+    await loadInitialWorkspace()
+    if (get(selectedNoteId) === oldPath) {
+      selectedNoteId.set(updatedNote.id)
+    }
+    return updatedNote
+  }
+  return null
+}
+
+export async function renameFolder(oldPath: string, newName: string): Promise<boolean> {
+  const success = await WailsAdapter.renameFolder(oldPath, newName)
+  if (success) {
+    if (get(selectedFolderId) === oldPath) {
+      selectedFolderId.set(null)
+    }
+    await loadInitialWorkspace()
+    return true
+  }
+  return false
+}
+
 let unsubscribeWatcher: (() => void) | null = null
 export function initWatcher() {
   if (unsubscribeWatcher) unsubscribeWatcher()

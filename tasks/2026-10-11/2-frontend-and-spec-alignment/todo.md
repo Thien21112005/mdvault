@@ -45,21 +45,21 @@ git commit -m "fix(editor): implement isDirty buffer guard against watcher reloa
 **Description:** Mở rộng tầng Anti-Corruption Layer `frontend/src/lib/wails/wailsAdapter.ts` để gọi 4 API CRUD mới của Backend (`DeleteNote`, `DeleteFolder`, `RenameNote`, `RenameFolder`). Bổ sung các store actions trong `frontend/src/lib/stores/vaultStore.ts` (`deleteNote`, `deleteFolder`, `renameNote`, `renameFolder`) kèm logic tự động làm tươi dữ liệu Workspace sau khi thực hiện.
 
 **Acceptance criteria:**
-- [ ] `WailsAdapter` có 4 phương thức tĩnh: `deleteNote`, `deleteFolder`, `renameNote`, `renameFolder` với cơ chế fallback gọi an toàn qua `window.go`.
-- [ ] `vaultStore.ts` có 4 action functions: `deleteNote(id)`, `deleteFolder(path)`, `renameNote(id, newTitle)`, `renameFolder(path, newName)`.
-- [ ] Xóa note thành công tự động chọn note kế tiếp hoặc reset `selectedNoteId` về `null`.
-- [ ] Đổi tên note thành công tự động cập nhật `selectedNoteId` theo ID (đường dẫn) mới.
+- [x] `WailsAdapter` có 4 phương thức tĩnh: `deleteNote`, `deleteFolder`, `renameNote`, `renameFolder` với cơ chế fallback gọi an toàn qua `window.go`.
+- [x] `vaultStore.ts` có 4 action functions: `deleteNote(id)`, `deleteFolder(path)`, `renameNote(id, newTitle)`, `renameFolder(path, newName)`.
+- [x] Xóa note thành công tự động chọn note kế tiếp hoặc reset `selectedNoteId` về `null`.
+- [x] Đổi tên note thành công tự động cập nhật `selectedNoteId` theo ID (đường dẫn) mới.
 
 **Verification & Testing:**
-- [ ] Type check: `npm run check` (0 errors, 0 warnings).
-- [ ] Go test: `go test -race ./...` (vẫn đảm bảo 17 test suites PASS 100%).
+- [x] Type check: `npm run check` (0 errors, 0 warnings).
+- [x] Go test: `go test -race ./...` (17 test suites PASS 100%).
 
 **Git Commit:**
 ```bash
 git add frontend/src/lib/wails/wailsAdapter.ts frontend/src/lib/stores/vaultStore.ts
 git commit -m "feat(store): expose full CRUD actions in wailsAdapter and vaultStore"
 ```
-*(Trạng thái: ⏳ Chưa thực hiện)*
+*(Trạng thái: ✅ Đã commit `541a620`)*
 
 **Dependencies:** Task 1  
 **Files likely touched:**
@@ -71,9 +71,9 @@ git commit -m "feat(store): expose full CRUD actions in wailsAdapter and vaultSt
 ---
 
 ## 🛑 Checkpoint: Sau Phase 1 (Data Safety & Store Bridge)
-- [ ] Buffer soạn thảo được bảo vệ an toàn 100% trước các sự kiện cập nhật ngoài.
-- [ ] Tầng Store có đầy đủ vũ khí CRUD sẵn sàng kết nối vào UI.
-- [ ] `npm run check` không có lỗi cú pháp hoặc type.
+- [x] Buffer soạn thảo được bảo vệ an toàn 100% trước các sự kiện cập nhật ngoài.
+- [x] Tầng Store có đầy đủ vũ khí CRUD sẵn sàng kết nối vào UI.
+- [x] `npm run check` không có lỗi cú pháp hoặc type.
 
 ---
 
