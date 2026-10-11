@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -18,6 +19,10 @@ type VaultUseCase interface {
 	SaveNote(filePath string, content string, title string, tags []string) error
 	CreateFolder(parentPath string, folderName string) error
 	CreateNote(folderPath string, noteTitle string) (*model.Note, error)
+	DeleteNote(filePath string) error
+	DeleteFolder(folderPath string) error
+	RenameNote(oldPath string, newTitle string) (*model.Note, error)
+	RenameFolder(oldPath string, newName string) error
 	SearchNotes(query string) ([]model.Note, error)
 	SetOnChangeCallback(callback func(path string))
 }
@@ -312,4 +317,169 @@ func (u *vaultUseCaseImpl) SearchNotes(query string) ([]model.Note, error) {
 		}
 	}
 	return results, nil
+}
+
+func (u *vaultUseCaseImpl) DeleteNote(filePath string) error {
+	validatedPath, err := u.validatePath(filePath)
+	if err != nil {
+		return err
+	}
+
+	u.mu.RLock()
+	ws := u.currentWsPath
+	u.mu.RUnlock()
+
+	cleanWs := normalizeDriveLetter(filepath.ToSlash(filepath.Clean(ws)))
+	if strings.EqualFold(validatedPath, cleanWs) {
+		return fmt.Errorf("truy cập bị từ chối: không thể xóa thư mục gốc workspace")
+	}
+
+	info, err := os.Stat(validatedPath)
+	if err != nil {
+		return fmt.Errorf("ghi chú không tồn tại: %w", err)
+	}
+	if info.IsDir() {
+		return fmt.Errorf("đường dẫn là thư mục, không phải ghi chú")
+	}
+
+	if err := u.repo.DeleteNote(validatedPath); err != nil {
+		return fmt.Errorf("lỗi khi xóa ghi chú: %w", err)
+	}
+
+	_, _ = u.RefreshCache()
+	return nil
+}
+
+func (u *vaultUseCaseImpl) DeleteFolder(folderPath string) error {
+	validatedPath, err := u.validatePath(folderPath)
+	if err != nil {
+		return err
+	}
+
+	u.mu.RLock()
+	ws := u.currentWsPath
+	u.mu.RUnlock()
+
+	cleanWs := normalizeDriveLetter(filepath.ToSlash(filepath.Clean(ws)))
+	if strings.EqualFold(validatedPath, cleanWs) {
+		return fmt.Errorf("truy cập bị từ chối: không thể xóa thư mục gốc workspace")
+	}
+
+	info, err := os.Stat(validatedPath)
+	if err != nil {
+		return fmt.Errorf("thư mục không tồn tại: %w", err)
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("đường dẫn là tệp tin, không phải thư mục")
+	}
+
+	if err := u.repo.DeleteFolder(validatedPath); err != nil {
+		return fmt.Errorf("lỗi khi xóa thư mục: %w", err)
+	}
+
+	_, _ = u.RefreshCache()
+	return nil
+}
+
+func (u *vaultUseCaseImpl) RenameNote(oldPath string, newTitle string) (*model.Note, error) {
+	cleanTitle := strings.TrimSpace(newTitle)
+	if cleanTitle == "" {
+		return nil, fmt.Errorf("tiêu đề mới không được để trống")
+	}
+	if strings.Contains(cleanTitle, "..") || strings.Contains(cleanTitle, "/") || strings.Contains(cleanTitle, "\\") {
+		return nil, fmt.Errorf("truy cập bị từ chối: tiêu đề không được chứa ký tự phân cách hoặc '..'")
+	}
+
+	validatedOld, err := u.validatePath(oldPath)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := os.Stat(validatedOld)
+	if err != nil {
+		return nil, fmt.Errorf("ghi chú không tồn tại: %w", err)
+	}
+	if info.IsDir() {
+		return nil, fmt.Errorf("đường dẫn là thư mục, không phải ghi chú")
+	}
+
+	oldNote, err := u.GetNote(validatedOld)
+	if err != nil {
+		return nil, fmt.Errorf("không thể đọc thông tin ghi chú: %w", err)
+	}
+
+	dir := filepath.Dir(validatedOld)
+	newFileName := strings.ToLower(strings.ReplaceAll(cleanTitle, " ", "-"))
+	newFileName = filepath.Base(newFileName)
+	if !strings.HasSuffix(newFileName, ".md") {
+		newFileName += ".md"
+	}
+	newPath := filepath.ToSlash(filepath.Join(dir, newFileName))
+
+	if !strings.EqualFold(validatedOld, newPath) {
+		if _, err := os.Stat(newPath); err == nil {
+			return nil, fmt.Errorf("ghi chú với tên '%s' đã tồn tại", newFileName)
+		}
+		if err := u.repo.RenameNote(validatedOld, newPath); err != nil {
+			return nil, fmt.Errorf("lỗi khi đổi tên tệp ghi chú: %w", err)
+		}
+	}
+
+	if err := u.repo.SaveNote(newPath, oldNote.Content, cleanTitle, oldNote.Tags); err != nil {
+		return nil, fmt.Errorf("lỗi khi cập nhật tiêu đề mới: %w", err)
+	}
+
+	_, _ = u.RefreshCache()
+	return u.GetNote(newPath)
+}
+
+func (u *vaultUseCaseImpl) RenameFolder(oldPath string, newName string) error {
+	cleanName := strings.TrimSpace(newName)
+	if cleanName == "" {
+		return fmt.Errorf("tên thư mục mới không được để trống")
+	}
+	if strings.Contains(cleanName, "..") || strings.Contains(cleanName, "/") || strings.Contains(cleanName, "\\") {
+		return fmt.Errorf("truy cập bị từ chối: tên thư mục không được chứa ký tự phân cách hoặc '..'")
+	}
+
+	validatedOld, err := u.validatePath(oldPath)
+	if err != nil {
+		return err
+	}
+
+	u.mu.RLock()
+	ws := u.currentWsPath
+	u.mu.RUnlock()
+
+	cleanWs := normalizeDriveLetter(filepath.ToSlash(filepath.Clean(ws)))
+	if strings.EqualFold(validatedOld, cleanWs) {
+		return fmt.Errorf("truy cập bị từ chối: không thể đổi tên thư mục gốc workspace")
+	}
+
+	info, err := os.Stat(validatedOld)
+	if err != nil {
+		return fmt.Errorf("thư mục không tồn tại: %w", err)
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("đường dẫn là tệp tin, không phải thư mục")
+	}
+
+	parent := filepath.Dir(validatedOld)
+	cleanName = filepath.Base(cleanName)
+	newFolderPath := filepath.ToSlash(filepath.Join(parent, cleanName))
+
+	if strings.EqualFold(validatedOld, newFolderPath) {
+		return nil
+	}
+
+	if _, err := os.Stat(newFolderPath); err == nil {
+		return fmt.Errorf("thư mục '%s' đã tồn tại", cleanName)
+	}
+
+	if err := u.repo.RenameFolder(validatedOld, newFolderPath); err != nil {
+		return fmt.Errorf("lỗi khi đổi tên thư mục: %w", err)
+	}
+
+	_, _ = u.RefreshCache()
+	return nil
 }

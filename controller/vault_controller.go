@@ -85,3 +85,25 @@ func (c *VaultController) CreateNote(folderPath string, noteTitle string) (*mode
 func (c *VaultController) SearchNotes(query string) ([]model.Note, error) {
 	return c.useCase.SearchNotes(query)
 }
+
+func (c *VaultController) DeleteNote(filePath string) error {
+	cleanPath := filepath.Clean(strings.TrimSpace(filePath))
+	return c.useCase.DeleteNote(cleanPath)
+}
+
+func (c *VaultController) DeleteFolder(folderPath string) error {
+	cleanPath := filepath.Clean(strings.TrimSpace(folderPath))
+	return c.useCase.DeleteFolder(cleanPath)
+}
+
+func (c *VaultController) RenameNote(oldPath string, newTitle string) (*model.Note, error) {
+	cleanPath := filepath.Clean(strings.TrimSpace(oldPath))
+	cleanTitle := strings.TrimSpace(newTitle)
+	return c.useCase.RenameNote(cleanPath, cleanTitle)
+}
+
+func (c *VaultController) RenameFolder(oldPath string, newName string) error {
+	cleanPath := filepath.Clean(strings.TrimSpace(oldPath))
+	cleanName := strings.TrimSpace(newName)
+	return c.useCase.RenameFolder(cleanPath, cleanName)
+}

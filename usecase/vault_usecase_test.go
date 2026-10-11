@@ -389,4 +389,155 @@ func TestVaultUseCase_PathTraversal_Rejected(t *testing.T) {
 	}
 }
 
+func TestVaultUseCase_CRUD_DeleteAndRenameNote(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "mdvault_uc_crud_note_*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	repo := filesystem.NewVaultRepository()
+	uc := NewVaultUseCase(repo)
+
+	if _, err := uc.OpenWorkspace(tempDir); err != nil {
+		t.Fatalf("OpenWorkspace failed: %v", err)
+	}
+
+	// 1. Tạo note ban đầu
+	note, err := uc.CreateNote("root", "Initial Note")
+	if err != nil {
+		t.Fatalf("CreateNote failed: %v", err)
+	}
+	oldPath := note.ID
+
+	// 2. Rename note thành "Renamed Note"
+	renamed, err := uc.RenameNote(oldPath, "Renamed Note")
+	if err != nil {
+		t.Fatalf("RenameNote failed: %v", err)
+	}
+	if renamed.Title != "Renamed Note" {
+		t.Errorf("Expected renamed.Title == 'Renamed Note', got '%s'", renamed.Title)
+	}
+
+	// Kiểm tra đĩa: file cũ không còn, file mới tồn tại
+	if _, err := os.Stat(oldPath); !os.IsNotExist(err) {
+		t.Errorf("Old file path should no longer exist: %s", oldPath)
+	}
+	if _, err := os.Stat(renamed.ID); os.IsNotExist(err) {
+		t.Errorf("New file path should exist: %s", renamed.ID)
+	}
+
+	// Kiểm tra cache RAM đồng bộ
+	data, err := uc.GetCurrentWorkspace()
+	if err != nil {
+		t.Fatalf("GetCurrentWorkspace failed: %v", err)
+	}
+	found := false
+	for _, n := range data.Notes {
+		if n.ID == oldPath {
+			t.Errorf("Old note path still found in cache: %s", oldPath)
+		}
+		if n.ID == renamed.ID && n.Title == "Renamed Note" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Renamed note not found in cache")
+	}
+
+	// 3. Xóa note
+	if err := uc.DeleteNote(renamed.ID); err != nil {
+		t.Fatalf("DeleteNote failed: %v", err)
+	}
+	if _, err := os.Stat(renamed.ID); !os.IsNotExist(err) {
+		t.Errorf("Deleted file still exists on disk: %s", renamed.ID)
+	}
+
+	// Kiểm tra cache sau khi xóa
+	dataAfterDelete, _ := uc.GetCurrentWorkspace()
+	for _, n := range dataAfterDelete.Notes {
+		if n.ID == renamed.ID {
+			t.Errorf("Deleted note still found in cache: %s", renamed.ID)
+		}
+	}
+
+	// 4. Bảo mật: Không được xóa file ngoài workspace
+	if err := uc.DeleteNote("../../outside.md"); err == nil {
+		t.Errorf("Expected DeleteNote with ../.. to fail, got nil")
+	}
+}
+
+func TestVaultUseCase_CRUD_DeleteAndRenameFolder(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "mdvault_uc_crud_folder_*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	repo := filesystem.NewVaultRepository()
+	uc := NewVaultUseCase(repo)
+
+	if _, err := uc.OpenWorkspace(tempDir); err != nil {
+		t.Fatalf("OpenWorkspace failed: %v", err)
+	}
+
+	// 1. Tạo thư mục
+	if err := uc.CreateFolder("root", "backend_docs"); err != nil {
+		t.Fatalf("CreateFolder failed: %v", err)
+	}
+	oldFolderPath := filepath.Join(tempDir, "backend_docs")
+
+	// Tạo một note bên trong thư mục
+	subNote, err := uc.CreateNote(oldFolderPath, "API Architecture")
+	if err != nil {
+		t.Fatalf("CreateNote inside folder failed: %v", err)
+	}
+	if subNote == nil {
+		t.Fatal("subNote is nil")
+	}
+
+	// 2. Rename thư mục thành "architecture_docs"
+	if err := uc.RenameFolder(oldFolderPath, "architecture_docs"); err != nil {
+		t.Fatalf("RenameFolder failed: %v", err)
+	}
+	newFolderPath := filepath.Join(tempDir, "architecture_docs")
+
+	if _, err := os.Stat(oldFolderPath); !os.IsNotExist(err) {
+		t.Errorf("Old folder should not exist: %s", oldFolderPath)
+	}
+	if _, err := os.Stat(newFolderPath); os.IsNotExist(err) {
+		t.Errorf("New folder should exist: %s", newFolderPath)
+	}
+
+	// Kiểm tra cache có chứa folder mới
+	data, _ := uc.GetCurrentWorkspace()
+	foundFolder := false
+	for _, f := range data.Folders {
+		if f.Name == "architecture_docs" {
+			foundFolder = true
+			break
+		}
+	}
+	if !foundFolder {
+		t.Errorf("New folder 'architecture_docs' not found in cache")
+	}
+
+	// 3. Xóa thư mục
+	if err := uc.DeleteFolder(newFolderPath); err != nil {
+		t.Fatalf("DeleteFolder failed: %v", err)
+	}
+	if _, err := os.Stat(newFolderPath); !os.IsNotExist(err) {
+		t.Errorf("Deleted folder still exists on disk: %s", newFolderPath)
+	}
+
+	// 4. Bảo mật: Cấm xóa hoặc đổi tên workspace root
+	if err := uc.DeleteFolder("root"); err == nil {
+		t.Errorf("Expected DeleteFolder('root') to fail, got nil")
+	}
+	if err := uc.RenameFolder("root", "new_root"); err == nil {
+		t.Errorf("Expected RenameFolder('root') to fail, got nil")
+	}
+}
+
+
 

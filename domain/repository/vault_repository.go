@@ -11,6 +11,10 @@ type VaultRepository interface {
 	SaveNote(filePath string, content string, title string, tags []string) error
 	CreateFolder(parentPath string, folderName string) error
 	CreateNote(folderPath string, noteTitle string) (*model.Note, error)
+	DeleteNote(filePath string) error
+	DeleteFolder(folderPath string) error
+	RenameNote(oldPath string, newPath string) error
+	RenameFolder(oldPath string, newPath string) error
 	StartWatcher(rootPath string, onChange func(path string)) error
 	StopWatcher() error
 	UpdateWatchPath(dirPath string) error

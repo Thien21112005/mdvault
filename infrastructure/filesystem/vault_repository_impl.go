@@ -562,5 +562,27 @@ func (r *vaultRepositoryImpl) CreateNote(folderPath string, noteTitle string) (*
 	return r.ParseNote(filePath, folderID)
 }
 
+func (r *vaultRepositoryImpl) DeleteNote(filePath string) error {
+	cleanPath := filepath.Clean(filePath)
+	return os.Remove(cleanPath)
+}
+
+func (r *vaultRepositoryImpl) DeleteFolder(folderPath string) error {
+	cleanPath := filepath.Clean(folderPath)
+	return os.RemoveAll(cleanPath)
+}
+
+func (r *vaultRepositoryImpl) RenameNote(oldPath string, newPath string) error {
+	cleanOld := filepath.Clean(oldPath)
+	cleanNew := filepath.Clean(newPath)
+	return os.Rename(cleanOld, cleanNew)
+}
+
+func (r *vaultRepositoryImpl) RenameFolder(oldPath string, newPath string) error {
+	cleanOld := filepath.Clean(oldPath)
+	cleanNew := filepath.Clean(newPath)
+	return os.Rename(cleanOld, cleanNew)
+}
+
 // Verify compilation at compile-time
 var _ repository.VaultRepository = (*vaultRepositoryImpl)(nil)

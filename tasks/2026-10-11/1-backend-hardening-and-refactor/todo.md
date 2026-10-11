@@ -254,29 +254,38 @@ git commit -m "sec(storage): enforce path traversal boundary validation against 
 **Description:** Mở rộng giao diện `domain/repository/vault_repository.go` và các phân lớp liên quan để bổ sung các chức năng còn thiếu: `DeleteNote`, `DeleteFolder`, `RenameNote`, `RenameFolder`. Kết nối API vào `controller/vault_controller.go` để sẵn sàng cho Wails IPC.
 
 **Acceptance criteria:**
-- [ ] Giao diện `VaultRepository` và `VaultUseCase` có đầy đủ các phương thức `DeleteNote`, `DeleteFolder`, `RenameNote`.
-- [ ] Xóa note/folder di chuyển vào thùng rác hoặc xóa an toàn với quyền hạn kiểm soát trong workspace.
-- [ ] Đổi tên note tự động cập nhật tên file và tiêu đề, đồng thời cập nhật cache RAM.
+- [x] Giao diện `VaultRepository` và `VaultUseCase` có đầy đủ các phương thức `DeleteNote`, `DeleteFolder`, `RenameNote`, `RenameFolder`.
+- [x] Xóa note/folder an toàn với quyền hạn kiểm soát trong workspace, cấm xóa workspace root.
+- [x] Đổi tên note tự động cập nhật tên file và tiêu đề, đồng thời cập nhật cache RAM.
 
 **Verification & Testing:**
-- [ ] Tests pass: Test xóa note, đổi tên note và kiểm tra tính nhất quán của cache.
-- [ ] Build succeeds: `go build -v .`
+- [x] Tests pass: Test xóa note, đổi tên note, xóa folder, đổi tên folder và kiểm tra tính nhất quán của cache (`TestVaultUseCase_CRUD_DeleteAndRenameNote`, `TestVaultUseCase_CRUD_DeleteAndRenameFolder` PASS 100%).
+- [x] Race detection: `go test -race ./...` (0 cảnh báo Data Race).
+- [x] Build succeeds: `go build -v .` (exit code 0).
 
 **Git Commit:**
 ```bash
-git add domain/ domain/repository/ infrastructure/filesystem/ usecase/ controller/
+git add domain/repository/vault_repository.go infrastructure/filesystem/vault_repository_impl.go usecase/vault_usecase.go usecase/vault_usecase_test.go controller/vault_controller.go
 git commit -m "feat(crud): add delete and rename capabilities for notes and folders"
 ```
-*(Trạng thái: ⏳ Chờ commit)*
+*(Trạng thái: ✅ Đã commit `f2fd7ce`)*
 
 **Dependencies:** Task 7  
 **Files likely touched:**
 - `domain/repository/vault_repository.go`
 - `infrastructure/filesystem/vault_repository_impl.go`
 - `usecase/vault_usecase.go`
+- `usecase/vault_usecase_test.go`
 - `controller/vault_controller.go`
 
-**Estimated scope:** Medium (4 files)
+**Estimated scope:** Medium (5 files)
+
+---
+
+## 🛑 Checkpoint: Sau Phase 4 (Security & Full CRUD)
+- [x] Lỗ hổng Path Traversal bị chặn đứng 100% bằng phân cấp `filepath.Rel` và kiểm soát ranh giới workspace root.
+- [x] Đầy đủ các API CRUD: Create, Read, Save, Delete, Rename cho cả Notes và Folders.
+- [x] Các thao tác Rename và Delete tự động đồng bộ tức thì với RAM Cache.
 
 ---
 
@@ -340,5 +349,5 @@ git commit -m "chore(review): complete two-axis engineering audit and finalize b
 | **Phase 1** | Watcher Lifecycle & Debounce | 2 Tasks (T1-T2) | ✅ Hoàn thành (2/2) |
 | **Phase 2** | Atomic Persistence & Frontmatter | 2 Tasks (T3-T4) | ✅ Hoàn thành (2/2) |
 | **Phase 3** | In-Memory Cache & Path Normalization | 2 Tasks (T5-T6) | ✅ Hoàn thành (2/2) |
-| **Phase 4** | Security Hardening & Core CRUD | 2 Tasks (T7-T8) | ⏳ Sẵn sàng thực hiện |
-| **Phase 5** | Comprehensive Testing & Code Review | 2 Tasks (T9-T10) | ⏳ Chờ Phase 4 |
+| **Phase 4** | Security Hardening & Core CRUD | 2 Tasks (T7-T8) | ✅ Hoàn thành (2/2) |
+| **Phase 5** | Comprehensive Testing & Code Review | 2 Tasks (T9-T10) | ⏳ Sẵn sàng thực hiện |
