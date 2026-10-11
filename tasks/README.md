@@ -19,4 +19,13 @@ Quy ước lưu trữ kế hoạch (Plan) và danh sách công việc (Todo) c�
 | **02** | **Xóa Bỏ Native Alert & Custom Glassmorphic Controls** | ✅ Hoàn thành (3/3) | [`2-custom-ui-controls/`](file:///d:/Tu-hoc/project/MDVault/tasks/2026-10-10/2-custom-ui-controls) | Loại bỏ blocking alert() bằng Sonner Toast, xây dựng CustomDropdown kính mờ thay thế HTML `<select>` mặc định |
 | **03** | **Toast Delight Motion & Viền Ngang Đồng Bộ** | ✅ Hoàn thành (4/4) | [`3-toast-delight-and-grid-alignment/`](file:///d:/Tu-hoc/project/MDVault/tasks/2026-10-10/3-toast-delight-and-grid-alignment) | Đồng bộ chiều cao viền ngang Header (h-12), nâng cấp Toast Spring Motion nảy nhẹ vào/lướt thẳng sang phải khi ra, triệt tiêu độ thụt dọc, Ambient Glow, thanh đếm ngược và Action Button tương tác tức thì |
 
+---
+
+### 📅 Ngày 2026-10-11
+
+| STT | Nhiệm Vụ / Kế Hoạch | Trạng Thái | Đường Dẫn Plan & Todo | Nội Dung Chính |
+| :---: | :--- | :--- | :--- | :--- |
+| **01** | **Gia Cố & Cải Tạo Toàn Diện Backend Go** | ⏳ Đang thực hiện (6/10) | [`tasks/2026-10-11/1-backend-hardening-and-refactor/`](file:///d:/Tu-hoc/project/MDVault/tasks/2026-10-11/1-backend-hardening-and-refactor/) | Sửa bão sự kiện Watcher & Debounce 50ms, Triển khai Atomic Write (.tmp -> Rename), Bảo toàn 100% Frontmatter YAML, In-memory Caching (sync.RWMutex), Chuẩn hóa đường dẫn ToSlash, Chống Path Traversal, Bổ sung CRUD (Delete/Rename) và Bộ Unit Test Go đầy đủ (-race) |
+
+
 

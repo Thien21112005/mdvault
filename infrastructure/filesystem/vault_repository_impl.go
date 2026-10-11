@@ -162,7 +162,7 @@ func (r *vaultRepositoryImpl) listenEvents(w *fsnotify.Watcher, done chan struct
 
 			// Chỉ thông báo sự kiện liên quan đến file markdown hoặc cấu trúc thư mục (qua Debounce 50ms)
 			if isRelevantWatchEvent(event) {
-				r.triggerDebounced(event.Name)
+				r.triggerDebounced(filepath.ToSlash(filepath.Clean(event.Name)))
 			}
 		case err, ok := <-w.Errors:
 			if !ok {
@@ -284,14 +284,18 @@ func (r *vaultRepositoryImpl) ParseNote(filePath string, folderID string) (*mode
 
 	bodyText := strings.Join(bodyLines, "\n")
 	excerpt := extractExcerpt(bodyLines)
-	normalizedPath := filepath.ToSlash(filePath)
+	normalizedPath := filepath.ToSlash(filepath.Clean(filePath))
+	normalizedFolder := filepath.ToSlash(strings.TrimSpace(folderID))
+	if normalizedFolder == "" || normalizedFolder == "." {
+		normalizedFolder = "root"
+	}
 
 	return &model.Note{
 		ID:           normalizedPath,
 		Title:        title,
 		Content:      bodyText,
 		Tags:         frontmatter.Tags,
-		Folder:       folderID,
+		Folder:       normalizedFolder,
 		LastModified: info.ModTime().Format(time.RFC3339),
 		Excerpt:      excerpt,
 		Metadata:     rawMeta,
@@ -437,7 +441,7 @@ func (r *vaultRepositoryImpl) ScanWorkspace(rootPath string) (*model.WorkspaceDa
 	if err != nil {
 		return nil, err
 	}
-	absRoot = filepath.ToSlash(absRoot)
+	absRoot = filepath.ToSlash(filepath.Clean(absRoot))
 
 	rootFolderMap := make(map[string]*model.Folder)
 	var allNotes []model.Note
@@ -448,8 +452,8 @@ func (r *vaultRepositoryImpl) ScanWorkspace(rootPath string) (*model.WorkspaceDa
 		if err != nil {
 			return err
 		}
-		slashPath := filepath.ToSlash(path)
-		if slashPath == absRoot {
+		slashPath := filepath.ToSlash(filepath.Clean(path))
+		if slashPath == absRoot || strings.EqualFold(slashPath, absRoot) {
 			return nil
 		}
 		name := d.Name()
@@ -459,7 +463,7 @@ func (r *vaultRepositoryImpl) ScanWorkspace(rootPath string) (*model.WorkspaceDa
 			}
 			return nil
 		}
-		rel, err := filepath.Rel(absRoot, path)
+		rel, err := filepath.Rel(absRoot, slashPath)
 		if err != nil {
 			return nil
 		}
@@ -478,8 +482,8 @@ func (r *vaultRepositoryImpl) ScanWorkspace(rootPath string) (*model.WorkspaceDa
 			}
 			rootFolderMap[slashPath] = folder
 
-			parentPath := filepath.ToSlash(filepath.Dir(path))
-			if parentPath == absRoot || depth == 0 {
+			parentPath := filepath.ToSlash(filepath.Dir(slashPath))
+			if parentPath == absRoot || strings.EqualFold(parentPath, absRoot) || depth == 0 {
 				rootFolders = append(rootFolders, folder)
 			} else {
 				if parent, ok := rootFolderMap[parentPath]; ok {
@@ -487,12 +491,12 @@ func (r *vaultRepositoryImpl) ScanWorkspace(rootPath string) (*model.WorkspaceDa
 				}
 			}
 		} else if strings.ToLower(filepath.Ext(name)) == ".md" {
-			parentDir := filepath.ToSlash(filepath.Dir(path))
+			parentDir := filepath.ToSlash(filepath.Dir(slashPath))
 			folderID := parentDir
-			if parentDir == absRoot {
+			if parentDir == absRoot || strings.EqualFold(parentDir, absRoot) {
 				folderID = "root"
 			}
-			note, err := r.ParseNote(path, folderID)
+			note, err := r.ParseNote(slashPath, folderID)
 			if err == nil && note != nil {
 				allNotes = append(allNotes, *note)
 				for _, t := range note.Tags {
@@ -521,7 +525,8 @@ func (r *vaultRepositoryImpl) ScanWorkspace(rootPath string) (*model.WorkspaceDa
 }
 
 func (r *vaultRepositoryImpl) CreateFolder(parentPath string, folderName string) error {
-	newPath := filepath.Join(parentPath, folderName)
+	cleanParent := filepath.ToSlash(filepath.Clean(parentPath))
+	newPath := filepath.ToSlash(filepath.Join(cleanParent, folderName))
 	err := os.MkdirAll(newPath, 0755)
 	if err == nil {
 		r.mu.Lock()
@@ -534,21 +539,26 @@ func (r *vaultRepositoryImpl) CreateFolder(parentPath string, folderName string)
 }
 
 func (r *vaultRepositoryImpl) CreateNote(folderPath string, noteTitle string) (*model.Note, error) {
-	if err := os.MkdirAll(folderPath, 0755); err != nil {
+	cleanFolder := filepath.ToSlash(filepath.Clean(folderPath))
+	if err := os.MkdirAll(cleanFolder, 0755); err != nil {
 		return nil, err
 	}
 	fileName := strings.ToLower(strings.ReplaceAll(noteTitle, " ", "-"))
 	if !strings.HasSuffix(fileName, ".md") {
 		fileName += ".md"
 	}
-	filePath := filepath.Join(folderPath, fileName)
+	filePath := filepath.ToSlash(filepath.Join(cleanFolder, fileName))
 
 	initialContent := fmt.Sprintf("---\ntitle: \"%s\"\ntags: []\n---\n\n# %s\n\nBắt đầu viết nội dung Ghi chú của bạn tại đây...\n", noteTitle, noteTitle)
 	if err := atomicWrite(filePath, []byte(initialContent)); err != nil {
 		return nil, err
 	}
 
-	return r.ParseNote(filePath, folderPath)
+	folderID := cleanFolder
+	if cleanFolder == "." || cleanFolder == "root" {
+		folderID = "root"
+	}
+	return r.ParseNote(filePath, folderID)
 }
 
 // Verify compilation at compile-time

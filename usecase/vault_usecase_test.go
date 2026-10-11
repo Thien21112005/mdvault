@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -186,3 +187,123 @@ func TestVaultUseCase_ConcurrentAccess_Race(t *testing.T) {
 
 	wg.Wait()
 }
+
+func TestVaultUseCase_PathNormalization_And_RootFolder(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "mdvault_uc_path_test_*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	repo := filesystem.NewVaultRepository()
+	uc := NewVaultUseCase(repo)
+
+	// 1. OpenWorkspace
+	wsData, err := uc.OpenWorkspace(tempDir)
+	if err != nil {
+		t.Fatalf("OpenWorkspace failed: %v", err)
+	}
+	if strings.Contains(wsData.RootPath, "\\") {
+		t.Errorf("Workspace RootPath contains backslashes: %s", wsData.RootPath)
+	}
+
+	// 2. Create note in "root"
+	rootNote1, err := uc.CreateNote("root", "Root Note Alpha")
+	if err != nil {
+		t.Fatalf("CreateNote in root failed: %v", err)
+	}
+	if rootNote1.Folder != "root" {
+		t.Errorf("Expected rootNote1.Folder to be 'root', got '%s'", rootNote1.Folder)
+	}
+	if strings.Contains(rootNote1.ID, "\\") {
+		t.Errorf("rootNote1.ID contains backslashes: %s", rootNote1.ID)
+	}
+
+	// 3. Create note with empty folder path ("") -> Should also resolve to "root"
+	rootNote2, err := uc.CreateNote("", "Root Note Beta")
+	if err != nil {
+		t.Fatalf("CreateNote with empty folder failed: %v", err)
+	}
+	if rootNote2.Folder != "root" {
+		t.Errorf("Expected rootNote2.Folder to be 'root', got '%s'", rootNote2.Folder)
+	}
+	if strings.Contains(rootNote2.ID, "\\") {
+		t.Errorf("rootNote2.ID contains backslashes: %s", rootNote2.ID)
+	}
+
+	// 4. Create subfolder
+	if err := uc.CreateFolder("root", "projects"); err != nil {
+		t.Fatalf("CreateFolder projects failed: %v", err)
+	}
+
+	// 5. Create note in subfolder
+	subDirPath := filepath.Join(tempDir, "projects")
+	subNote, err := uc.CreateNote(subDirPath, "Project Spec")
+	if err != nil {
+		t.Fatalf("CreateNote in subfolder failed: %v", err)
+	}
+	expectedSubFolder := filepath.ToSlash(filepath.Clean(subDirPath))
+	if subNote.Folder != expectedSubFolder {
+		t.Errorf("Expected subNote.Folder to be '%s', got '%s'", expectedSubFolder, subNote.Folder)
+	}
+	if strings.Contains(subNote.Folder, "\\") {
+		t.Errorf("subNote.Folder contains backslashes: %s", subNote.Folder)
+	}
+	if strings.Contains(subNote.ID, "\\") {
+		t.Errorf("subNote.ID contains backslashes: %s", subNote.ID)
+	}
+
+	// 6. GetNote on root note
+	retrievedRoot, err := uc.GetNote(rootNote1.ID)
+	if err != nil {
+		t.Fatalf("GetNote rootNote1 failed: %v", err)
+	}
+	if retrievedRoot.Folder != "root" {
+		t.Errorf("GetNote root note expected Folder 'root', got '%s'", retrievedRoot.Folder)
+	}
+	if strings.Contains(retrievedRoot.ID, "\\") || strings.Contains(retrievedRoot.Folder, "\\") {
+		t.Errorf("retrievedRoot contains backslashes: ID=%s, Folder=%s", retrievedRoot.ID, retrievedRoot.Folder)
+	}
+
+	// 7. GetNote on subfolder note
+	retrievedSub, err := uc.GetNote(subNote.ID)
+	if err != nil {
+		t.Fatalf("GetNote subNote failed: %v", err)
+	}
+	if retrievedSub.Folder != expectedSubFolder {
+		t.Errorf("GetNote sub note expected Folder '%s', got '%s'", expectedSubFolder, retrievedSub.Folder)
+	}
+	if strings.Contains(retrievedSub.ID, "\\") || strings.Contains(retrievedSub.Folder, "\\") {
+		t.Errorf("retrievedSub contains backslashes: ID=%s, Folder=%s", retrievedSub.ID, retrievedSub.Folder)
+	}
+
+	// 8. GetCurrentWorkspace cache consistency
+	cached, err := uc.GetCurrentWorkspace()
+	if err != nil {
+		t.Fatalf("GetCurrentWorkspace failed: %v", err)
+	}
+	for _, n := range cached.Notes {
+		if strings.Contains(n.ID, "\\") {
+			t.Errorf("Cached note ID contains backslashes: %s", n.ID)
+		}
+		if strings.Contains(n.Folder, "\\") {
+			t.Errorf("Cached note Folder contains backslashes: %s", n.Folder)
+		}
+		if n.Title == "Root Note Alpha" || n.Title == "Root Note Beta" {
+			if n.Folder != "root" {
+				t.Errorf("Cached note '%s' expected Folder 'root', got '%s'", n.Title, n.Folder)
+			}
+		}
+		if n.Title == "Project Spec" {
+			if n.Folder != expectedSubFolder {
+				t.Errorf("Cached note '%s' expected Folder '%s', got '%s'", n.Title, expectedSubFolder, n.Folder)
+			}
+		}
+	}
+	for _, f := range cached.Folders {
+		if strings.Contains(f.ID, "\\") {
+			t.Errorf("Cached folder ID contains backslashes: %s", f.ID)
+		}
+	}
+}
+

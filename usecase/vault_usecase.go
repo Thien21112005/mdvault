@@ -67,10 +67,16 @@ func (u *vaultUseCaseImpl) SetOnChangeCallback(callback func(path string)) {
 }
 
 func (u *vaultUseCaseImpl) OpenWorkspace(dirPath string) (*model.WorkspaceData, error) {
-	cleanPath := strings.TrimSpace(dirPath)
-	if cleanPath == "" {
+	trimmed := strings.TrimSpace(dirPath)
+	if trimmed == "" {
 		return nil, fmt.Errorf("đường dẫn workspace không được để trống")
 	}
+
+	absPath, err := filepath.Abs(trimmed)
+	if err != nil {
+		absPath = trimmed
+	}
+	cleanPath := filepath.ToSlash(filepath.Clean(absPath))
 
 	data, err := u.repo.ScanWorkspace(cleanPath)
 	if err != nil {
@@ -128,11 +134,30 @@ func (u *vaultUseCaseImpl) RefreshCache() (*model.WorkspaceData, error) {
 }
 
 func (u *vaultUseCaseImpl) GetNote(filePath string) (*model.Note, error) {
-	return u.repo.ParseNote(filePath, filepath.Dir(filePath))
+	u.mu.RLock()
+	ws := u.currentWsPath
+	u.mu.RUnlock()
+
+	cleanFilePath := filepath.ToSlash(filepath.Clean(filePath))
+	parentDir := filepath.ToSlash(filepath.Dir(cleanFilePath))
+
+	folderID := parentDir
+	if ws != "" && (parentDir == ws || strings.EqualFold(parentDir, ws)) {
+		folderID = "root"
+	}
+
+	note, err := u.repo.ParseNote(cleanFilePath, folderID)
+	if err != nil {
+		return nil, err
+	}
+	note.ID = cleanFilePath
+	note.Folder = folderID
+	return note, nil
 }
 
 func (u *vaultUseCaseImpl) SaveNote(filePath string, content string, title string, tags []string) error {
-	err := u.repo.SaveNote(filePath, content, title, tags)
+	cleanPath := filepath.ToSlash(filepath.Clean(filePath))
+	err := u.repo.SaveNote(cleanPath, content, title, tags)
 	if err == nil {
 		_, _ = u.RefreshCache()
 	}
@@ -144,8 +169,9 @@ func (u *vaultUseCaseImpl) CreateFolder(parentPath string, folderName string) er
 	ws := u.currentWsPath
 	u.mu.RUnlock()
 
-	targetParent := parentPath
-	if targetParent == "" || targetParent == "root" {
+	cleanParent := filepath.ToSlash(filepath.Clean(parentPath))
+	targetParent := cleanParent
+	if targetParent == "" || targetParent == "root" || targetParent == "." || (ws != "" && strings.EqualFold(targetParent, ws)) {
 		targetParent = ws
 	}
 	if targetParent == "" {
@@ -164,19 +190,33 @@ func (u *vaultUseCaseImpl) CreateNote(folderPath string, noteTitle string) (*mod
 	ws := u.currentWsPath
 	u.mu.RUnlock()
 
-	targetFolder := folderPath
-	if targetFolder == "" || targetFolder == "root" {
-		targetFolder = ws
-	}
-	if targetFolder == "" {
+	if ws == "" {
 		return nil, fmt.Errorf("chưa có workspace để tạo ghi chú")
 	}
 
-	note, err := u.repo.CreateNote(targetFolder, noteTitle)
-	if err == nil {
-		_, _ = u.RefreshCache()
+	cleanFolder := filepath.ToSlash(filepath.Clean(folderPath))
+	targetFolder := cleanFolder
+	isRoot := false
+
+	if targetFolder == "" || targetFolder == "root" || targetFolder == "." || strings.EqualFold(targetFolder, ws) {
+		targetFolder = ws
+		isRoot = true
 	}
-	return note, err
+
+	note, err := u.repo.CreateNote(targetFolder, noteTitle)
+	if err != nil {
+		return nil, err
+	}
+
+	if isRoot {
+		note.Folder = "root"
+	} else {
+		note.Folder = filepath.ToSlash(targetFolder)
+	}
+	note.ID = filepath.ToSlash(note.ID)
+
+	_, _ = u.RefreshCache()
+	return note, nil
 }
 
 func (u *vaultUseCaseImpl) SearchNotes(query string) ([]model.Note, error) {

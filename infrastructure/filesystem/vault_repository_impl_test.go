@@ -393,3 +393,55 @@ func TestFrontmatter_FallbackToH1AndFilename(t *testing.T) {
 	}
 }
 
+func TestPathNormalization_WindowsNoBackslashes(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "mdvault_slash_test_*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	repo := NewVaultRepository()
+
+	// Tạo subfolder
+	subDir := filepath.Join(tempDir, "docs")
+	if err := repo.CreateFolder(tempDir, "docs"); err != nil {
+		t.Fatalf("CreateFolder failed: %v", err)
+	}
+
+	// Tạo note trong subfolder
+	subNote, err := repo.CreateNote(subDir, "Architecture Guide")
+	if err != nil {
+		t.Fatalf("CreateNote in subfolder failed: %v", err)
+	}
+
+	if strings.Contains(subNote.ID, "\\") {
+		t.Errorf("subNote.ID contains backslashes: %s", subNote.ID)
+	}
+	if strings.Contains(subNote.Folder, "\\") {
+		t.Errorf("subNote.Folder contains backslashes: %s", subNote.Folder)
+	}
+
+	// Quét ScanWorkspace
+	data, err := repo.ScanWorkspace(tempDir)
+	if err != nil {
+		t.Fatalf("ScanWorkspace failed: %v", err)
+	}
+	if strings.Contains(data.RootPath, "\\") {
+		t.Errorf("data.RootPath contains backslashes: %s", data.RootPath)
+	}
+	for _, n := range data.Notes {
+		if strings.Contains(n.ID, "\\") {
+			t.Errorf("Scanned note ID contains backslashes: %s", n.ID)
+		}
+		if strings.Contains(n.Folder, "\\") {
+			t.Errorf("Scanned note Folder contains backslashes: %s", n.Folder)
+		}
+	}
+	for _, f := range data.Folders {
+		if strings.Contains(f.ID, "\\") {
+			t.Errorf("Scanned folder ID contains backslashes: %s", f.ID)
+		}
+	}
+}
+
+
