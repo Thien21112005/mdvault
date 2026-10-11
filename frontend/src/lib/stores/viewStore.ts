@@ -7,6 +7,7 @@ export const viewMode = writable<ViewMode>('list')
 export const isEditingNote = writable<boolean>(false)
 export const isSidebarOpen = writable<boolean>(true)
 export const editorMode = writable<EditorMode>('preview')
+export const isEditorDirty = writable<boolean>(false)
 
 export function toggleSidebar() {
   isSidebarOpen.update(v => !v)

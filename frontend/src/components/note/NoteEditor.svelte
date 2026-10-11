@@ -17,13 +17,13 @@
     ListTodo,
     Quote,
     Link,
-    Minus
+    Minus,
+    AlertCircle
   } from '@lucide/svelte'
   import { selectedNote, saveActiveNote, notes, selectedNoteId } from '$lib/stores/vaultStore'
-  import { editorMode, setEditorMode } from '$lib/stores/viewStore'
+  import { editorMode, setEditorMode, isEditorDirty } from '$lib/stores/viewStore'
   import { renderMarkdown } from '$lib/utils/markdown'
   import { toast } from '$lib/stores/toastStore'
-
 
   let editTitle = $state('')
   let editTagsList = $state<string[]>([])
@@ -34,12 +34,68 @@
   let previewContainerEl = $state<HTMLDivElement | null>(null)
   let splitPreviewContainerEl = $state<HTMLDivElement | null>(null)
 
-  // Sync state whenever selected note changes
+  // Buffer protection & dirty tracking state
+  let lastLoadedNoteId = $state<string | null>(null)
+  let loadedTitle = $state('')
+  let loadedContent = $state('')
+  let loadedTagsJson = $state('[]')
+  let isExternalModified = $state(false)
+
+  // Derived dirty flag comparing active working copy against loaded baseline
+  const isDirty = $derived(
+    Boolean(
+      $selectedNote && (
+        editContent !== loadedContent ||
+        editTitle !== loadedTitle ||
+        JSON.stringify(editTagsList) !== loadedTagsJson
+      )
+    )
+  )
+
+  // Broadcast dirty state to viewStore for global UI awareness (e.g. StatusBar)
   $effect(() => {
-    if ($selectedNote) {
-      editTitle = $selectedNote.title
-      editTagsList = [...($selectedNote.tags || [])]
-      editContent = $selectedNote.content
+    isEditorDirty.set(isDirty)
+  })
+
+  // Sync state whenever selected note changes, protecting unsaved edits from being wiped
+  $effect(() => {
+    const current = $selectedNote
+    if (!current) {
+      lastLoadedNoteId = null
+      isExternalModified = false
+      return
+    }
+
+    // Case 1: Switching to a different note entirely
+    if (current.id !== lastLoadedNoteId) {
+      editTitle = current.title || ''
+      editTagsList = [...(current.tags || [])]
+      editContent = current.content || ''
+      loadedTitle = editTitle
+      loadedContent = editContent
+      loadedTagsJson = JSON.stringify(editTagsList)
+      lastLoadedNoteId = current.id
+      isExternalModified = false
+      return
+    }
+
+    // Case 2: Same note refreshed by file watcher or background scan
+    if (!isDirty) {
+      // User has not typed anything unsaved, so we can seamlessly accept disk changes
+      if (current.content !== editContent || current.title !== editTitle) {
+        editTitle = current.title || ''
+        editTagsList = [...(current.tags || [])]
+        editContent = current.content || ''
+        loadedTitle = editTitle
+        loadedContent = editContent
+        loadedTagsJson = JSON.stringify(editTagsList)
+      }
+      isExternalModified = false
+    } else {
+      // User HAS unsaved changes! Protect editContent and editTitle from being clobbered!
+      if (current.content !== loadedContent) {
+        isExternalModified = true
+      }
     }
   })
 
@@ -60,6 +116,10 @@
     }
 
     saveActiveNote($selectedNote.id, editContent, editTitle, editTagsList)
+    loadedTitle = editTitle
+    loadedContent = editContent
+    loadedTagsJson = JSON.stringify(editTagsList)
+    isExternalModified = false
     toast.success('Note Saved', 'All changes stored safely')
     isSavedToast = true
     setTimeout(() => {
@@ -337,6 +397,13 @@
         <span class="font-mono text-[10.5px]">
           {wordsCount} words
         </span>
+        {#if isDirty}
+          <span class="text-[var(--border-subtle)]">•</span>
+          <span class="text-amber-500 font-mono text-[10px] flex items-center space-x-1 font-semibold animate-in fade-in duration-150">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+            <span>Unsaved</span>
+          </span>
+        {/if}
       </div>
 
       <div class="flex items-center space-x-3">
@@ -381,12 +448,42 @@
             {:else}
               <Save size={12} />
               <span>Save</span>
+              {#if isDirty}
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.8)] animate-pulse" title="Unsaved changes"></span>
+              {/if}
               <kbd class="text-[9px] font-mono opacity-70 ml-1 px-1 py-0.2 bg-black/20 rounded">Ctrl+S</kbd>
             {/if}
           </button>
         {/if}
       </div>
     </div>
+
+    <!-- External Modification Warning Banner -->
+    {#if isExternalModified}
+      <div class="mx-6 mt-3 px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between text-[11px] text-amber-500 animate-in fade-in slide-in-from-top-1 duration-200">
+        <div class="flex items-center space-x-2 truncate">
+          <AlertCircle size={14} class="shrink-0 text-amber-500" />
+          <span class="truncate font-medium">File on disk was modified externally while editing. Press Save (Ctrl+S) to overwrite with your version.</span>
+        </div>
+        <button
+          onclick={() => {
+            if ($selectedNote) {
+              editTitle = $selectedNote.title
+              editContent = $selectedNote.content
+              editTagsList = [...($selectedNote.tags || [])]
+              loadedTitle = editTitle
+              loadedContent = editContent
+              loadedTagsJson = JSON.stringify(editTagsList)
+              isExternalModified = false
+              toast.info('Reloaded from disk')
+            }
+          }}
+          class="ml-3 px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-[10.5px] font-semibold text-amber-500 transition-colors shrink-0 pressable"
+        >
+          Reload from disk
+        </button>
+      </div>
+    {/if}
 
     <!-- Main Workspace Area based on $editorMode -->
     {#if $editorMode === 'split'}
