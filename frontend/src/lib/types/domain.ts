@@ -6,6 +6,7 @@ export interface Note {
   folder: string
   lastModified: string
   excerpt: string
+  metadata?: Record<string, any>
 }
 
 export interface Folder {

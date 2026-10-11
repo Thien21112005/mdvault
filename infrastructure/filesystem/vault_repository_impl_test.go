@@ -276,3 +276,120 @@ func TestCreateNote_AtomicPersistence(t *testing.T) {
 	}
 }
 
+func TestFrontmatter_PreservesCustomMetadataOnSave(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "mdvault_meta_test_*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	repo := NewVaultRepository()
+	testFile := filepath.Join(tempDir, "rich_note.md")
+
+	initialYAML := `---
+title: "Kiến Trúc Microservices"
+tags: ["architecture", "go"]
+icon: "server"
+author: "Alex"
+aliases:
+  - "distributed-systems"
+  - "clean-arch"
+status: "draft"
+---
+
+# Nội dung bài viết
+Uncle Bob's Clean Architecture pattern...
+`
+	if err := os.WriteFile(testFile, []byte(initialYAML), 0644); err != nil {
+		t.Fatalf("Failed to write initial file: %v", err)
+	}
+
+	// 1. Parse note ban đầu
+	note, err := repo.ParseNote(testFile, "root")
+	if err != nil {
+		t.Fatalf("ParseNote failed: %v", err)
+	}
+	if note.Metadata == nil {
+		t.Fatal("Expected note.Metadata to be non-nil")
+	}
+	if note.Metadata["icon"] != "server" {
+		t.Errorf("Expected icon 'server', got '%v'", note.Metadata["icon"])
+	}
+	if note.Metadata["author"] != "Alex" {
+		t.Errorf("Expected author 'Alex', got '%v'", note.Metadata["author"])
+	}
+
+	// 2. Lưu cập nhật với Tiêu Đề và Tags mới
+	newContent := "Nội dung cập nhật mới hoàn toàn..."
+	newTitle := "Kiến Trúc Microservices 2026"
+	newTags := []string{"architecture", "golang", "backend"}
+
+	if err := repo.SaveNote(testFile, newContent, newTitle, newTags); err != nil {
+		t.Fatalf("SaveNote failed: %v", err)
+	}
+
+	// 3. Đọc lại file sau khi lưu và xác minh
+	savedNote, err := repo.ParseNote(testFile, "root")
+	if err != nil {
+		t.Fatalf("ParseNote on saved file failed: %v", err)
+	}
+
+	// Xác minh tiêu đề và tags đã được cập nhật
+	if savedNote.Title != newTitle {
+		t.Errorf("Expected updated title '%s', got '%s'", newTitle, savedNote.Title)
+	}
+	if len(savedNote.Tags) != 3 {
+		t.Errorf("Expected 3 tags, got %d", len(savedNote.Tags))
+	}
+
+	// BẢO TOÀN 100%: Các trường custom YAML ban đầu (icon, author, status, aliases) KHÔNG ĐƯỢC MẤT!
+	if savedNote.Metadata == nil {
+		t.Fatal("Expected savedNote.Metadata to be non-nil")
+	}
+	if savedNote.Metadata["icon"] != "server" {
+		t.Errorf("FAIL: 'icon' metadata was lost or modified! Got '%v'", savedNote.Metadata["icon"])
+	}
+	if savedNote.Metadata["author"] != "Alex" {
+		t.Errorf("FAIL: 'author' metadata was lost or modified! Got '%v'", savedNote.Metadata["author"])
+	}
+	if savedNote.Metadata["status"] != "draft" {
+		t.Errorf("FAIL: 'status' metadata was lost or modified! Got '%v'", savedNote.Metadata["status"])
+	}
+}
+
+func TestFrontmatter_FallbackToH1AndFilename(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "mdvault_fallback_test_*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	repo := NewVaultRepository()
+
+	// Trường hợp 1: Không có Frontmatter nhưng có H1
+	fileWithH1 := filepath.Join(tempDir, "guide.md")
+	if err := os.WriteFile(fileWithH1, []byte("# Hướng Dẫn Git Rebase\n\nNội dung hướng dẫn..."), 0644); err != nil {
+		t.Fatalf("Failed to write fileWithH1: %v", err)
+	}
+	note1, err := repo.ParseNote(fileWithH1, "root")
+	if err != nil {
+		t.Fatalf("ParseNote note1 failed: %v", err)
+	}
+	if note1.Title != "Hướng Dẫn Git Rebase" {
+		t.Errorf("Expected fallback title from H1 'Hướng Dẫn Git Rebase', got '%s'", note1.Title)
+	}
+
+	// Trường hợp 2: Không có Frontmatter và không có H1 -> Lấy tên file
+	fileNoHeading := filepath.Join(tempDir, "todo-list.md")
+	if err := os.WriteFile(fileNoHeading, []byte("Chỉ có nội dung văn bản thường không tiêu đề"), 0644); err != nil {
+		t.Fatalf("Failed to write fileNoHeading: %v", err)
+	}
+	note2, err := repo.ParseNote(fileNoHeading, "root")
+	if err != nil {
+		t.Fatalf("ParseNote note2 failed: %v", err)
+	}
+	if note2.Title != "todo-list" {
+		t.Errorf("Expected fallback title from filename 'todo-list', got '%s'", note2.Title)
+	}
+}
+

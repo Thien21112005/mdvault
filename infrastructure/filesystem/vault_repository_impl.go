@@ -233,6 +233,7 @@ func (r *vaultRepositoryImpl) ParseNote(filePath string, folderID string) (*mode
 	lines := strings.Split(contentStr, "\n")
 
 	var frontmatter model.Frontmatter
+	var rawMeta map[string]interface{}
 	var bodyLines []string
 	inFrontmatter := false
 	frontmatterFound := false
@@ -259,6 +260,7 @@ func (r *vaultRepositoryImpl) ParseNote(filePath string, folderID string) (*mode
 	} else {
 		yamlStr := strings.Join(yamlLines, "\n")
 		_ = yaml.Unmarshal([]byte(yamlStr), &frontmatter)
+		_ = yaml.Unmarshal([]byte(yamlStr), &rawMeta)
 	}
 
 	title := frontmatter.Title
@@ -292,6 +294,7 @@ func (r *vaultRepositoryImpl) ParseNote(filePath string, folderID string) (*mode
 		Folder:       folderID,
 		LastModified: info.ModTime().Format(time.RFC3339),
 		Excerpt:      excerpt,
+		Metadata:     rawMeta,
 	}, nil
 }
 
@@ -365,14 +368,54 @@ func atomicWrite(filePath string, data []byte) error {
 	return renameErr
 }
 
+func extractExistingFrontmatterMap(filePath string) map[string]interface{} {
+	contentBytes, err := os.ReadFile(filePath)
+	if err != nil {
+		return make(map[string]interface{})
+	}
+	contentStr := string(contentBytes)
+	lines := strings.Split(contentStr, "\n")
+	if len(lines) == 0 || strings.TrimSpace(lines[0]) != "---" {
+		return make(map[string]interface{})
+	}
+
+	var yamlLines []string
+	found := false
+	for i := 1; i < len(lines); i++ {
+		line := lines[i]
+		if strings.TrimSpace(line) == "---" {
+			found = true
+			break
+		}
+		yamlLines = append(yamlLines, line)
+	}
+	if !found {
+		return make(map[string]interface{})
+	}
+
+	metaMap := make(map[string]interface{})
+	_ = yaml.Unmarshal([]byte(strings.Join(yamlLines, "\n")), &metaMap)
+	if metaMap == nil {
+		return make(map[string]interface{})
+	}
+	return metaMap
+}
+
 func (r *vaultRepositoryImpl) SaveNote(filePath string, content string, title string, tags []string) error {
+	metaMap := extractExistingFrontmatterMap(filePath)
+	if metaMap == nil {
+		metaMap = make(map[string]interface{})
+	}
+	metaMap["title"] = title
+	if tags == nil {
+		metaMap["tags"] = []string{}
+	} else {
+		metaMap["tags"] = tags
+	}
+
+	out, err := yaml.Marshal(metaMap)
 	var sb strings.Builder
 	sb.WriteString("---\n")
-	fm := model.Frontmatter{
-		Title: title,
-		Tags:  tags,
-	}
-	out, err := yaml.Marshal(fm)
 	if err == nil {
 		sb.Write(out)
 	} else {

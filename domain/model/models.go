@@ -2,13 +2,14 @@ package model
 
 // Note đại diện cho cấu trúc 1 file markdown trong Domain
 type Note struct {
-	ID           string   `json:"id"`           // Đường dẫn file chuẩn hóa
-	Title        string   `json:"title"`        // Tiêu đề note
-	Content      string   `json:"content"`      // Nội dung markdown
-	Tags         []string `json:"tags"`         // Danh sách tag từ frontmatter
-	Folder       string   `json:"folder"`       // ID thư mục cha
-	LastModified string   `json:"lastModified"` // Chuẩn RFC3339 ISO String
-	Excerpt      string   `json:"excerpt"`      // Tóm tắt nội dung
+	ID           string                 `json:"id"`                     // Đường dẫn file chuẩn hóa
+	Title        string                 `json:"title"`                  // Tiêu đề note
+	Content      string                 `json:"content"`                // Nội dung markdown
+	Tags         []string               `json:"tags"`                   // Danh sách tag từ frontmatter
+	Folder       string                 `json:"folder"`                 // ID thư mục cha
+	LastModified string                 `json:"lastModified"`           // Chuẩn RFC3339 ISO String
+	Excerpt      string                 `json:"excerpt"`                // Tóm tắt nội dung
+	Metadata     map[string]interface{} `json:"metadata,omitempty"`     // Toàn bộ siêu dữ liệu Frontmatter mở rộng
 }
 
 // Folder đại diện cho thư mục lưu trữ trong cây Workspace
@@ -31,7 +32,8 @@ type WorkspaceData struct {
 
 // Frontmatter mô tả cấu trúc YAML đầu file markdown
 type Frontmatter struct {
-	Title string   `yaml:"title"`
-	Tags  []string `yaml:"tags"`
-	Icon  string   `yaml:"icon,omitempty"`
+	Title string                 `yaml:"title"`
+	Tags  []string               `yaml:"tags"`
+	Icon  string                 `yaml:"icon,omitempty"`
+	Extra map[string]interface{} `yaml:",inline"`
 }
