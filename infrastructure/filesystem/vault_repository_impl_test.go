@@ -444,4 +444,105 @@ func TestPathNormalization_WindowsNoBackslashes(t *testing.T) {
 	}
 }
 
+func TestRepository_TableDriven_FileOperations(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "mdvault_repo_table_*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	repo := NewVaultRepository()
+
+	tests := []struct {
+		name       string
+		folderName string
+		noteTitle  string
+		content    string
+		tags       []string
+		renameTo   string
+	}{
+		{
+			name:       "Standard Note in Root",
+			folderName: "",
+			noteTitle:  "Standard Note",
+			content:    "Standard content without special chars",
+			tags:       []string{"go", "unit-test"},
+			renameTo:   "Standard Note Renamed",
+		},
+		{
+			name:       "Unicode Vietnamese Note in Subfolder",
+			folderName: "tai-lieu",
+			noteTitle:  "Kiến Trúc Phần Mềm",
+			content:    "Nội dung tiếng Việt có dấu đầy đủ và chi tiết.",
+			tags:       []string{"kiến-trúc", "hệ-thống"},
+			renameTo:   "Kiến Trúc Microservices Mới",
+		},
+		{
+			name:       "Note with Empty Tags",
+			folderName: "scratch",
+			noteTitle:  "Scratchpad",
+			content:    "Chỉ là nội dung nháp nhanh",
+			tags:       []string{},
+			renameTo:   "Scratchpad Final",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			targetDir := tempDir
+			if tt.folderName != "" {
+				if err := repo.CreateFolder(tempDir, tt.folderName); err != nil {
+					t.Fatalf("[%s] CreateFolder failed: %v", tt.name, err)
+				}
+				targetDir = filepath.Join(tempDir, tt.folderName)
+			}
+
+			// 1. CreateNote
+			createdNote, err := repo.CreateNote(targetDir, tt.noteTitle)
+			if err != nil {
+				t.Fatalf("[%s] CreateNote failed: %v", tt.name, err)
+			}
+			if createdNote == nil || createdNote.Title != tt.noteTitle {
+				t.Fatalf("[%s] Expected title '%s', got '%v'", tt.name, tt.noteTitle, createdNote)
+			}
+
+			// 2. SaveNote with custom content and tags
+			if err := repo.SaveNote(createdNote.ID, tt.content, tt.noteTitle, tt.tags); err != nil {
+				t.Fatalf("[%s] SaveNote failed: %v", tt.name, err)
+			}
+
+			// 3. ParseNote to verify persistence
+			parsed, err := repo.ParseNote(createdNote.ID, createdNote.Folder)
+			if err != nil {
+				t.Fatalf("[%s] ParseNote failed: %v", tt.name, err)
+			}
+			if !strings.Contains(parsed.Content, tt.content) {
+				t.Errorf("[%s] Parsed content does not contain expected text", tt.name)
+			}
+			if len(parsed.Tags) != len(tt.tags) {
+				t.Errorf("[%s] Expected %d tags, got %d", tt.name, len(tt.tags), len(parsed.Tags))
+			}
+
+			// 4. RenameNote
+			newSlug := strings.ToLower(strings.ReplaceAll(tt.renameTo, " ", "-")) + ".md"
+			newPath := filepath.ToSlash(filepath.Join(targetDir, newSlug))
+			if err := repo.RenameNote(createdNote.ID, newPath); err != nil {
+				t.Fatalf("[%s] RenameNote failed: %v", tt.name, err)
+			}
+			if _, err := os.Stat(newPath); os.IsNotExist(err) {
+				t.Errorf("[%s] Renamed note does not exist at %s", tt.name, newPath)
+			}
+
+			// 5. DeleteNote
+			if err := repo.DeleteNote(newPath); err != nil {
+				t.Fatalf("[%s] DeleteNote failed: %v", tt.name, err)
+			}
+			if _, err := os.Stat(newPath); !os.IsNotExist(err) {
+				t.Errorf("[%s] Deleted note still exists on disk", tt.name)
+			}
+		})
+	}
+}
+
+
 

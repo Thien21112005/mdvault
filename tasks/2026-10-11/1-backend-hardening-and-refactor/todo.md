@@ -295,20 +295,22 @@ git commit -m "feat(crud): add delete and rename capabilities for notes and fold
 **Description:** Viết toàn bộ các bộ kiểm thử Table-driven test cho `infrastructure/filesystem` và `usecase`. Đạt tỷ lệ bao phủ các kịch bản quan trọng (Frontmatter, Atomic Write, In-memory Search, Path Security) và chạy kiểm tra đồng thời với `go test -race ./...`.
 
 **Acceptance criteria:**
-- [ ] Tạo các file test:
+- [x] Tạo và củng cố toàn bộ các file test:
   - `infrastructure/filesystem/vault_repository_impl_test.go`
   - `usecase/vault_usecase_test.go`
-- [ ] Lệnh `go test -race ./...` vượt qua 100% không có cảnh báo Data Race hoặc leak goroutine.
+- [x] Lệnh `go test -race ./...` vượt qua 100% không có cảnh báo Data Race hoặc leak goroutine.
 
 **Verification & Testing:**
-- [ ] `go test -race -v ./...` exit code 0.
+- [x] `go test -race -v ./...` exit code 0 (Toàn bộ 17 unit test và stress test PASS 100%).
+- [x] `go vet ./...` 0 warnings.
+- [x] `go build -v .` exit code 0.
 
 **Git Commit:**
 ```bash
 git add infrastructure/filesystem/vault_repository_impl_test.go usecase/vault_usecase_test.go
 git commit -m "test(backend): add table-driven test suites and race condition verification"
 ```
-*(Trạng thái: ⏳ Chờ commit)*
+*(Trạng thái: ✅ Đã commit `a437a7b`)*
 
 **Dependencies:** All previous tasks  
 **Files likely touched:**

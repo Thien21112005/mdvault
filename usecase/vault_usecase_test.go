@@ -539,5 +539,175 @@ func TestVaultUseCase_CRUD_DeleteAndRenameFolder(t *testing.T) {
 	}
 }
 
+func TestVaultUseCase_TableDriven_Search(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "mdvault_uc_search_table_*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	repo := filesystem.NewVaultRepository()
+	uc := NewVaultUseCase(repo)
+
+	if _, err := uc.OpenWorkspace(tempDir); err != nil {
+		t.Fatalf("OpenWorkspace failed: %v", err)
+	}
+
+	// Nạp dữ liệu mẫu
+	seedNotes := []struct {
+		title   string
+		content string
+		tags    []string
+	}{
+		{"Clean Architecture trong Golang", "Hướng dẫn triển khai Clean Architecture chi tiết", []string{"golang", "architecture"}},
+		{"Frontend Svelte 5 và Runes", "Svelte 5 giới thiệu reactive runes mạnh mẽ và mượt mà", []string{"frontend", "svelte"}},
+		{"Bảo Mật Local First Software", "Bảo vệ WebView2 và kiểm soát ranh giới Path Traversal", []string{"security", "local-first"}},
+		{"Tối Ưu Hiệu Năng Bộ Nhớ RAM", "Chiến lược sync.RWMutex và giảm thiểu allocation rác", []string{"golang", "performance"}},
+	}
+
+	for _, s := range seedNotes {
+		note, err := uc.CreateNote("root", s.title)
+		if err != nil {
+			t.Fatalf("CreateNote '%s' failed: %v", s.title, err)
+		}
+		if err := uc.SaveNote(note.ID, s.content, s.title, s.tags); err != nil {
+			t.Fatalf("SaveNote '%s' failed: %v", s.title, err)
+		}
+	}
+
+	tests := []struct {
+		name          string
+		query         string
+		expectedCount int
+		mustContain   string
+	}{
+		{
+			name:          "Search by exact tag 'golang'",
+			query:         "golang",
+			expectedCount: 2,
+			mustContain:   "Clean Architecture trong Golang",
+		},
+		{
+			name:          "Search by content keyword 'runes'",
+			query:         "runes",
+			expectedCount: 1,
+			mustContain:   "Frontend Svelte 5 và Runes",
+		},
+		{
+			name:          "Search by title substring 'Bảo Mật'",
+			query:         "Bảo Mật",
+			expectedCount: 1,
+			mustContain:   "Bảo Mật Local First Software",
+		},
+		{
+			name:          "Search with non-existent query",
+			query:         "non-existent-xyz-404",
+			expectedCount: 0,
+			mustContain:   "",
+		},
+		{
+			name:          "Empty query returns all notes",
+			query:         "",
+			expectedCount: 4,
+			mustContain:   "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			results, err := uc.SearchNotes(tt.query)
+			if err != nil {
+				t.Fatalf("[%s] SearchNotes failed: %v", tt.name, err)
+			}
+			if len(results) != tt.expectedCount {
+				t.Errorf("[%s] Expected %d results, got %d", tt.name, tt.expectedCount, len(results))
+			}
+			if tt.mustContain != "" {
+				found := false
+				for _, r := range results {
+					if r.Title == tt.mustContain {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("[%s] Expected results to contain '%s'", tt.name, tt.mustContain)
+				}
+			}
+		})
+	}
+}
+
+func TestVaultUseCase_HeavyConcurrencyStress_Race(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "mdvault_uc_stress_*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	repo := filesystem.NewVaultRepository()
+	uc := NewVaultUseCase(repo)
+
+	if _, err := uc.OpenWorkspace(tempDir); err != nil {
+		t.Fatalf("OpenWorkspace failed: %v", err)
+	}
+
+	// Tạo trước 5 notes ban đầu
+	for i := 1; i <= 5; i++ {
+		_, _ = uc.CreateNote("root", fmt.Sprintf("Initial Note %d", i))
+	}
+
+	var wg sync.WaitGroup
+
+	// 15 goroutines đọc GetCurrentWorkspace liên tục
+	for i := 0; i < 15; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for j := 0; j < 30; j++ {
+				_, _ = uc.GetCurrentWorkspace()
+			}
+		}()
+	}
+
+	// 15 goroutines tìm kiếm SearchNotes liên tục
+	for i := 0; i < 15; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			queries := []string{"Note", "Initial", "golang", "test"}
+			for j := 0; j < 30; j++ {
+				_, _ = uc.SearchNotes(queries[j%len(queries)])
+			}
+		}()
+	}
+
+	// 10 goroutines tạo và cập nhật note liên tục
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func(workerID int) {
+			defer wg.Done()
+			for j := 0; j < 10; j++ {
+				note, err := uc.CreateNote("root", fmt.Sprintf("Stress Note %d-%d", workerID, j))
+				if err == nil && note != nil {
+					_ = uc.SaveNote(note.ID, fmt.Sprintf("Stress content %d", j), note.Title, []string{"stress", "race"})
+				}
+			}
+		}(i)
+	}
+
+	wg.Wait()
+
+	// Kiểm tra tính toàn vẹn của cache sau khi tải nặng kết thúc
+	finalData, err := uc.GetCurrentWorkspace()
+	if err != nil {
+		t.Fatalf("GetCurrentWorkspace failed after stress test: %v", err)
+	}
+	if len(finalData.Notes) < 5 {
+		t.Errorf("Corrupted cache: expected at least 5 notes, got %d", len(finalData.Notes))
+	}
+}
+
+
 
 
