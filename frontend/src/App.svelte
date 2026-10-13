@@ -6,6 +6,7 @@
   import NoteEditor from './components/note/NoteEditor.svelte'
   import GraphView from './components/graph/GraphView.svelte'
   import CommandPalette from './components/layout/CommandPalette.svelte'
+  import StatusBar from './components/layout/StatusBar.svelte'
   import Toast from './components/ui/Toast.svelte'
   import { loadInitialWorkspace, initWatcher } from '$lib/stores/vaultStore'
   import { viewMode, isSidebarOpen, toggleSidebar, switchView, openCommandPalette } from '$lib/stores/viewStore'
@@ -60,6 +61,9 @@
       <GraphView />
     {/if}
   </div>
+
+  <!-- Realtime Glassmorphic Status Bar (PRB Spec) -->
+  <StatusBar />
 
   <!-- Global Command Palette Modal & Sonner Toast Notifications -->
   <CommandPalette />

@@ -158,22 +158,22 @@ git commit -m "feat(sidebar): add folder context actions for rename and safe del
 **Description:** Xây dựng component `frontend/src/components/layout/StatusBar.svelte` theo đúng thiết kế Wireframe trong tài liệu [PRB.md](../../../markdown/PRB.md#L171). Gắn thanh đáy vào `frontend/src/App.svelte` với chiều cao 28px (`h-7`), thiết kế kính mờ sang trọng chuẩn Apple Design.
 
 **Acceptance criteria:**
-- [ ] Component `StatusBar.svelte` hiển thị ở chân trang màn hình với hiệu ứng `backdrop-blur`.
-- [ ] Hiển thị chấm trạng thái xanh lá nhấp nháy: `● fsnotify active` kèm đường dẫn workspace hiện tại.
-- [ ] Hiển thị số từ (`words`), số ký tự (`chars`), và trạng thái lưu (`Saved` / `Unsaved`).
-- [ ] Hiển thị thông số tổng số ghi chú trong vault.
-- [ ] Layout tổng thể của ứng dụng cân đối, không bị che khuất nội dung cuộn bên trong Editor hay NotesList.
+- [x] Component `StatusBar.svelte` hiển thị ở chân trang màn hình với hiệu ứng `backdrop-blur`.
+- [x] Hiển thị chấm trạng thái xanh lá nhấp nháy: `● fsnotify active` kèm đường dẫn workspace hiện tại.
+- [x] Hiển thị số từ (`words`), số ký tự (`chars`), và trạng thái lưu (`Saved` / `Unsaved`).
+- [x] Hiển thị thông số tổng số ghi chú trong vault.
+- [x] Layout tổng thể của ứng dụng cân đối, không bị che khuất nội dung cuộn bên trong Editor hay NotesList (chuẩn hóa `h-full`).
 
 **Verification & Testing:**
-- [ ] Type check: `npm run check` (0 errors, 0 warnings).
-- [ ] Kiểm tra giao diện trực quan: Thanh đáy cố định đẹp mắt, mượt mà ở cả Dark và Light mode.
+- [x] Type check: `npm run check` (0 errors, 0 warnings).
+- [x] Kiểm tra giao diện trực quan: Thanh đáy cố định đẹp mắt, mượt mà ở cả Dark và Light mode.
 
 **Git Commit:**
 ```bash
-git add frontend/src/components/layout/StatusBar.svelte frontend/src/App.svelte
+git add frontend/src/components/layout/StatusBar.svelte frontend/src/App.svelte frontend/src/components/sidebar/Sidebar.svelte frontend/src/components/note/NotesList.svelte frontend/src/components/note/NoteEditor.svelte frontend/src/components/graph/GraphView.svelte
 git commit -m "feat(layout): implement glassmorphic status bar with realtime watcher status"
 ```
-*(Trạng thái: ⏳ Chưa thực hiện)*
+*(Trạng thái: ✅ Đã hoàn thành)*
 
 **Dependencies:** Phase 1  
 **Files likely touched:**
@@ -291,7 +291,7 @@ git commit -m "chore(review): complete two-axis engineering audit and finalize f
 
 | Phase | Tên Giai Đoạn | Số Task | Trạng Thái |
 | :---: | :--- | :---: | :---: |
-| **Phase 1** | An Toàn Nhập Liệu & Cầu Nối CRUD | 2 Tasks (T1-T2) | ⏳ Chưa thực hiện (0/2) |
-| **Phase 2** | Giao Diện Tương Tác CRUD Cho Note & Folder | 2 Tasks (T3-T4) | ⏳ Chưa thực hiện (0/2) |
-| **Phase 3** | Polish Giao Diện Chuẩn Đặc Tả PRB/SRS | 2 Tasks (T5-T6) | ⏳ Chưa thực hiện (0/2) |
+| **Phase 1** | An Toàn Nhập Liệu & Cầu Nối CRUD | 2 Tasks (T1-T2) | ✅ Hoàn thành (2/2) |
+| **Phase 2** | Giao Diện Tương Tác CRUD Cho Note & Folder | 2 Tasks (T3-T4) | ✅ Hoàn thành (2/2) |
+| **Phase 3** | Polish Giao Diện Chuẩn Đặc Tả PRB/SRS | 2 Tasks (T5-T6) | 🚀 Đang thực hiện (0/2) - Chuẩn bị Task 5 |
 | **Phase 4** | Đồng Bộ Đặc Tả Kỹ Thuật & Nghiệm Thu | 2 Tasks (T7-T8) | ⏳ Chưa thực hiện (0/2) |

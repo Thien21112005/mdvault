@@ -62,7 +62,7 @@
   }
 </script>
 
-<div class="flex-1 h-[calc(100vh-3.25rem)] relative w-full overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--bg-surface-elevated)_0%,_var(--bg-base)_100%)] select-none">
+<div class="flex-1 h-full relative w-full overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--bg-surface-elevated)_0%,_var(--bg-base)_100%)] select-none">
   <!-- Galaxy HUD Information Card (Top-Left) -->
   <div class="absolute top-5 left-5 z-10 bg-[var(--bg-surface-elevated)]/80 backdrop-blur-xl border border-[var(--border-subtle)] p-4 rounded-2xl shadow-[var(--shadow-glass)] max-w-sm transition-all duration-300">
     <div class="flex items-center justify-between space-x-2">

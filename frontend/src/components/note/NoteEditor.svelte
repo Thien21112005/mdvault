@@ -418,7 +418,7 @@
   </div>
 {/snippet}
 
-<div class="flex-1 bg-transparent flex flex-col h-[calc(100vh-3.25rem)] overflow-hidden relative">
+<div class="flex-1 bg-transparent flex flex-col h-full overflow-hidden relative">
   {#if !$selectedNote}
     <div class="flex-1 flex flex-col items-center justify-center text-[var(--text-muted)] space-y-4">
       <div class="p-5 rounded-3xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] shadow-[var(--shadow-glass)]">

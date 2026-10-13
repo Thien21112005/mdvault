@@ -72,7 +72,7 @@
   }
 </script>
 
-<div class="w-80 bg-[var(--bg-surface)] backdrop-blur-xl border-r border-[var(--border-subtle)] flex flex-col h-[calc(100vh-3.25rem)] select-none transition-colors duration-200">
+<div class="w-80 bg-[var(--bg-surface)] backdrop-blur-xl border-r border-[var(--border-subtle)] flex flex-col h-full select-none transition-colors duration-200">
   <!-- Header Bar with Count & Sort Control -->
   <div class="h-12 px-3.5 border-b border-[var(--border-subtle)] flex items-center justify-between sticky top-0 z-10 bg-[var(--bg-surface)]/90 backdrop-blur-md shrink-0">
     <div class="flex items-center space-x-1.5">
