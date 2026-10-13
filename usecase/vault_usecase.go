@@ -292,27 +292,51 @@ func (u *vaultUseCaseImpl) CreateNote(folderPath string, noteTitle string) (*mod
 	return note, nil
 }
 
+func matchKeyword(s, qOriginal, qLower string) bool {
+	if qLower == "" {
+		return true
+	}
+	if strings.Contains(s, qOriginal) || strings.Contains(s, qLower) {
+		return true
+	}
+	return strings.Contains(strings.ToLower(s), qLower)
+}
+
 func (u *vaultUseCaseImpl) SearchNotes(query string) ([]model.Note, error) {
 	data, err := u.GetCurrentWorkspace()
 	if err != nil || data == nil {
 		return nil, err
 	}
 
-	q := strings.ToLower(strings.TrimSpace(query))
-	if q == "" {
+	qOriginal := strings.TrimSpace(query)
+	if qOriginal == "" {
 		return data.Notes, nil
 	}
+	qLower := strings.ToLower(qOriginal)
 
 	var results []model.Note
 	for _, n := range data.Notes {
+		// 1. Kiểm tra Tiêu đề trước (chuỗi ngắn, tốc độ nhanh nhất)
+		if matchKeyword(n.Title, qOriginal, qLower) {
+			results = append(results, n)
+			continue
+		}
+
+		// 2. Kiểm tra Thẻ Tags (chuỗi ngắn)
 		tagMatches := false
 		for _, t := range n.Tags {
-			if strings.Contains(strings.ToLower(t), q) {
+			if matchKeyword(t, qOriginal, qLower) {
 				tagMatches = true
 				break
 			}
 		}
-		if strings.Contains(strings.ToLower(n.Title), q) || strings.Contains(strings.ToLower(n.Content), q) || tagMatches {
+		if tagMatches {
+			results = append(results, n)
+			continue
+		}
+
+		// 3. Chỉ kiểm tra Nội dung toàn văn khi Tiêu đề và Tags không khớp
+		if matchKeyword(n.Content, qOriginal, qLower) {
 			results = append(results, n)
 		}
 	}
