@@ -233,19 +233,19 @@ git commit -m "feat(ui): support dynamic frontmatter icons and search keyword hi
 3. Cập nhật mô tả thuật toán bố cục đồ thị tri thức sang mô hình Galaxy Phyllotaxis Spiral và phân bổ màu sắc vũ trụ.
 
 **Acceptance criteria:**
-- [ ] `markdown/LLD.md` có đầy đủ đặc tả 12 API Wails IPC (thay vì 8 API cũ).
-- [ ] Các struct Go trong tài liệu trùng khớp 100% với `domain/model/models.go`.
-- [ ] Thuật toán trong tài liệu mô tả chính xác logic thực tế của `graphBuilder.ts`.
+- [x] `markdown/LLD.md` có đầy đủ đặc tả 12 API Wails IPC (thay vì 8 API cũ).
+- [x] Các struct Go trong tài liệu trùng khớp 100% với `domain/model/models.go`.
+- [x] Thuật toán trong tài liệu mô tả chính xác logic thực tế của `graphBuilder.ts`.
 
 **Verification & Testing:**
-- [ ] Kiểm tra tính toàn vẹn markdown, các liên kết nội bộ và code blocks syntax.
+- [x] Kiểm tra tính toàn vẹn markdown, các liên kết nội bộ và code blocks syntax.
 
 **Git Commit:**
 ```bash
 git add markdown/LLD.md
 git commit -m "docs(spec): synchronize LLD specification with current models and CRUD APIs"
 ```
-*(Trạng thái: ⏳ Chưa thực hiện)*
+*(Trạng thái: ✅ Đã commit `de7e42a`)*
 
 **Dependencies:** All previous tasks  
 **Files likely touched:**

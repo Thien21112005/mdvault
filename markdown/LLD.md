@@ -25,13 +25,14 @@ package model
 
 // Note đại diện cho cấu trúc 1 file markdown trong Domain
 type Note struct {
-	ID           string   `json:"id"`           // Đường dẫn file chuẩn hóa tuyệt đối
-	Title        string   `json:"title"`        // Tiêu đề trích xuất từ Frontmatter / Heading 1
-	Content      string   `json:"content"`      // Nội dung văn bản Markdown thuần túy
-	Tags         []string `json:"tags"`         // Danh sách các thẻ phân loại từ Frontmatter
-	Folder       string   `json:"folder"`       // Đường dẫn thư mục cha trực tiếp
-	LastModified string   `json:"lastModified"` // Thời điểm sửa đổi gần nhất (RFC3339 ISO String)
-	Excerpt      string   `json:"excerpt"`      // Đoạn trích tóm tắt (tối đa 150 ký tự đầu)
+	ID           string                 `json:"id"`                     // Đường dẫn file chuẩn hóa tuyệt đối
+	Title        string                 `json:"title"`                  // Tiêu đề trích xuất từ Frontmatter / Heading 1
+	Content      string                 `json:"content"`                // Nội dung văn bản Markdown thuần túy
+	Tags         []string               `json:"tags"`                   // Danh sách các thẻ phân loại từ Frontmatter
+	Folder       string                 `json:"folder"`                 // Đường dẫn thư mục cha trực tiếp
+	LastModified string                 `json:"lastModified"`           // Thời điểm sửa đổi gần nhất (RFC3339 ISO String)
+	Excerpt      string                 `json:"excerpt"`                // Đoạn trích tóm tắt (tối đa 150 ký tự đầu)
+	Metadata     map[string]interface{} `json:"metadata,omitempty"`     // Toàn bộ siêu dữ liệu Frontmatter mở rộng (icon, banner, custom fields)
 }
 
 // Folder đại diện cho thư mục lưu trữ trong cây Workspace phân cấp
@@ -54,9 +55,10 @@ type WorkspaceData struct {
 
 // Frontmatter mô tả cấu trúc YAML đặt tại đầu file markdown
 type Frontmatter struct {
-	Title string   `yaml:"title"`          // Tiêu đề ghi chú khai báo trong YAML
-	Tags  []string `yaml:"tags"`           // Danh sách thẻ gắn kèm
-	Icon  string   `yaml:"icon,omitempty"` // Biểu tượng tùy biến (tùy chọn)
+	Title string                 `yaml:"title"`          // Tiêu đề ghi chú khai báo trong YAML
+	Tags  []string               `yaml:"tags"`           // Danh sách thẻ gắn kèm
+	Icon  string                 `yaml:"icon,omitempty"` // Biểu tượng tùy biến (tùy chọn)
+	Extra map[string]interface{} `yaml:",inline"`        // Các trường siêu dữ liệu tùy biến bổ sung
 }
 ```
 
@@ -72,6 +74,7 @@ export interface Note {
   folder: string;
   lastModified: string;
   excerpt: string;
+  metadata?: Record<string, any>; // Toàn bộ siêu dữ liệu Frontmatter mở rộng
 }
 
 export interface Folder {
@@ -102,21 +105,32 @@ package repository
 
 import "mdvault/domain/model"
 
+// VaultRepository định nghĩa giao thức quản lý dữ liệu tệp tin trong Clean Architecture
 type VaultRepository interface {
-	// Quét đệ quy thư mục và bóc tách cấu trúc tệp .md
-	ScanWorkspace(dirPath string) (*model.WorkspaceData, error)
-	// Đọc nội dung chi tiết của một tệp ghi chú
-	GetNote(filePath string) (*model.Note, error)
+	// Quét đệ quy thư mục và bóc tách cấu trúc tệp .md thành cây thư mục & danh sách note
+	ScanWorkspace(rootPath string) (*model.WorkspaceData, error)
+	// Bóc tách nội dung chi tiết và YAML Frontmatter của một tệp ghi chú
+	ParseNote(filePath string, folderID string) (*model.Note, error)
 	// Lưu nội dung ghi chú xuống ổ cứng theo cơ chế nguyên tử (Atomic Write)
 	SaveNote(filePath string, content string, title string, tags []string) error
 	// Tạo thư mục mới trên hệ thống tệp
-	CreateFolder(parentPath string, name string) error
+	CreateFolder(parentPath string, folderName string) error
 	// Tạo tệp ghi chú mới kèm YAML Frontmatter mẫu
-	CreateNote(folderPath string, title string) (*model.Note, error)
-	// Khởi chạy Daemon giám sát biến động hệ thống tệp thời gian thực
-	StartWatching(dirPath string, onChange func(path string)) error
-	// Hủy đăng ký và dừng Daemon giám sát
-	StopWatching() error
+	CreateNote(folderPath string, noteTitle string) (*model.Note, error)
+	// Xóa an toàn một tệp ghi chú khỏi hệ thống tệp (Chống Path Traversal)
+	DeleteNote(filePath string) error
+	// Xóa đệ quy một thư mục cùng toàn bộ tệp con bên trong
+	DeleteFolder(folderPath string) error
+	// Đổi tên hoặc di chuyển tệp ghi chú
+	RenameNote(oldPath string, newPath string) error
+	// Đổi tên hoặc di chuyển thư mục
+	RenameFolder(oldPath string, newPath string) error
+	// Khởi chạy Daemon giám sát biến động hệ thống tệp thời gian thực (fsnotify)
+	StartWatcher(rootPath string, onChange func(path string)) error
+	// Dừng Daemon giám sát hệ thống tệp
+	StopWatcher() error
+	// Cập nhật đường dẫn theo dõi của Watcher
+	UpdateWatchPath(dirPath string) error
 }
 ```
 
@@ -126,9 +140,10 @@ type VaultRepository interface {
    - Sử dụng `filepath.WalkDir` để đạt tốc độ tối đa và giảm thiểu số lần gọi system call `lstat`.
    - Bỏ qua các thư mục ẩn bắt đầu bằng dấu chấm (như `.git`, `.vscode`).
    - Lọc các tệp có phần mở rộng `.md` hoặc `.markdown`.
-2. **Bộ giải mã Frontmatter:**
+2. **Bộ giải mã Frontmatter bảo toàn siêu dữ liệu:**
    - Tìm kiếm dòng phân cách `---` đầu tiên và thứ hai.
    - Trích xuất khối YAML nằm giữa hai dòng phân cách và giải mã bằng `goccy/go-yaml`.
+   - Sử dụng trường `Extra map[string]interface{} \`yaml:",inline"\`` để lưu trữ toàn bộ các thuộc tính tùy biến mà không làm rơi rụng khi ghi đè.
    - Nếu giải mã thành công nhưng thiếu `Title`, tự động trích xuất từ Heading 1 (`strings.HasPrefix(line, "# ")`).
 3. **Module giám sát `fsnotify.Watcher`:**
    - Chạy một Goroutine nền thường trực lắng nghe trên channel `watcher.Events`.
@@ -138,11 +153,36 @@ type VaultRepository interface {
    - Viết toàn bộ nội dung mới vào một tệp tạm: `tempPath := filePath + ".tmp"`.
    - Gọi hàm `file.Sync()` để ép dữ liệu từ bộ nhớ đệm hệ điều hành xả hoàn toàn xuống đĩa cứng.
    - Thực hiện lệnh `os.Rename(tempPath, filePath)` – thao tác hoán đổi tên tệp là nguyên tử (Atomic) ở cấp độ hệ thống tệp NTFS/ext4, loại bỏ nguy cơ tệp bị hỏng hoặc mất dữ liệu khi mất điện đột ngột.
+5. **Cơ chế phòng thủ Path Traversal:**
+   - Mọi thao tác I/O (Delete, Rename, Save) đều xác thực đường dẫn thông qua `filepath.Clean` và kiểm tra nghiêm ngặt `strings.HasPrefix(targetPath, rootPath)`.
 
 ### 2.3. Chi Tiết Tầng Nghiệp Vụ (`usecase/vault_usecase.go`)
 
-1. **Bảo vệ an toàn đa luồng (Thread-Safe Mutex):**
-   - Sử dụng `sync.Mutex` để bao bọc các biến toàn cục trong UseCase: `currentWsPath`, `currentData`, `onChangeCb`.
+```go
+package usecase
+
+import "mdvault/domain/model"
+
+type VaultUseCase interface {
+	OpenWorkspace(dirPath string) (*model.WorkspaceData, error)
+	GetCurrentWorkspace() (*model.WorkspaceData, error)
+	RefreshCache() (*model.WorkspaceData, error)
+	GetNote(filePath string) (*model.Note, error)
+	SaveNote(filePath string, content string, title string, tags []string) error
+	CreateFolder(parentPath string, folderName string) error
+	CreateNote(folderPath string, noteTitle string) (*model.Note, error)
+	DeleteNote(filePath string) error
+	DeleteFolder(folderPath string) error
+	RenameNote(oldPath string, newTitle string) (*model.Note, error)
+	RenameFolder(oldPath string, newName string) error
+	SearchNotes(query string) ([]model.Note, error)
+	SetOnChangeCallback(callback func(path string))
+}
+```
+
+1. **Bảo vệ an toàn đa luồng & Bộ nhớ đệm (Thread-Safe In-Memory Cache):**
+   - Sử dụng `sync.RWMutex` (`mu.RLock()` cho đọc cache `GetCurrentWorkspace`, `mu.Lock()` cho cập nhật cache và xử lý CRUD).
+   - Tự động làm mới bộ nhớ đệm (`RefreshCache()`) ngay sau khi hoàn tất các thao tác biến đổi dữ liệu (Create, Delete, Rename).
 2. **Thuật toán tìm kiếm trong bộ nhớ (In-Memory Search Algorithm):**
    - Độ phức tạp thời gian: $O(N)$ với $N$ là tổng số ghi chú trong Workspace.
    - Chuẩn hóa từ khóa tìm kiếm về chữ thường: `q := strings.ToLower(strings.TrimSpace(query))`.
@@ -165,6 +205,10 @@ classDiagram
         +CreateFolder(parentPath string, folderName string) error
         +CreateNote(folderPath string, noteTitle string) (*model.Note, error)
         +SearchNotes(query string) ([]model.Note, error)
+        +DeleteNote(filePath string) error
+        +DeleteFolder(folderPath string) error
+        +RenameNote(oldPath string, newTitle string) (*model.Note, error)
+        +RenameFolder(oldPath string, newName string) error
     }
 ```
 
@@ -302,7 +346,57 @@ classDiagram
 
 ---
 
-### 3.9. Đặc Tả Sự Kiện Hệ Thống Thời Gian Thực (Runtime Events)
+### API-09: `DeleteNote(filePath)`
+- **Mục đích:** Xóa vĩnh viễn một tệp ghi chú khỏi hệ thống tệp và tự động làm mới bộ nhớ đệm (Cache).
+- **Phương thức gọi:** `window.go.controller.VaultController.DeleteNote(filePath)`
+- **Tham số đầu vào:**
+  | Tên tham số | Kiểu dữ liệu | Bắt buộc | Mô tả kỹ thuật |
+  | :--- | :--- | :---: | :--- |
+  | `filePath` | `string` | Có | Đường dẫn tuyệt đối của tệp `.md` cần xóa |
+- **Phản hồi thành công:** `null` / `void` (Promise resolved).
+- **Mã lỗi:** Trả về lỗi nếu vi phạm Path Traversal (tệp nằm ngoài Workspace) hoặc không có quyền xóa tệp.
+
+---
+
+### API-10: `DeleteFolder(folderPath)`
+- **Mục đích:** Xóa đệ quy một thư mục cùng toàn bộ tệp và thư mục con bên trong khỏi hệ thống tệp.
+- **Phương thức gọi:** `window.go.controller.VaultController.DeleteFolder(folderPath)`
+- **Tham số đầu vào:**
+  | Tên tham số | Kiểu dữ liệu | Bắt buộc | Mô tả kỹ thuật |
+  | :--- | :--- | :---: | :--- |
+  | `folderPath` | `string` | Có | Đường dẫn tuyệt đối của thư mục cần xóa |
+- **Phản hồi thành công:** `null` / `void`.
+- **Mã lỗi:** Trả về lỗi nếu cố gắng xóa thư mục gốc Workspace (`rootPath`), vi phạm Path Traversal hoặc thư mục đang bị hệ điều hành khóa.
+
+---
+
+### API-11: `RenameNote(oldPath, newTitle)`
+- **Mục đích:** Đổi tên tệp ghi chú và cập nhật trường `Title` trong YAML Frontmatter, tự động sinh tên tệp an toàn (Safe Filename).
+- **Phương thức gọi:** `window.go.controller.VaultController.RenameNote(oldPath, newTitle)`
+- **Tham số đầu vào:**
+  | Tên tham số | Kiểu dữ liệu | Bắt buộc | Mô tả kỹ thuật |
+  | :--- | :--- | :---: | :--- |
+  | `oldPath` | `string` | Có | Đường dẫn tuyệt đối hiện tại của tệp `.md` |
+  | `newTitle` | `string` | Có | Tiêu đề mới của ghi chú |
+- **Phản hồi thành công:** Đối tượng `model.Note` đại diện cho ghi chú sau khi được đổi tên và chuyển dời đường dẫn.
+- **Mã lỗi:** Trả về lỗi nếu tiêu đề mới rỗng, trùng tên với tệp đã tồn tại trong cùng thư mục, hoặc vi phạm Path Traversal.
+
+---
+
+### API-12: `RenameFolder(oldPath, newName)`
+- **Mục đích:** Đổi tên thư mục vật lý trên đĩa cứng và cập nhật toàn bộ cây phân cấp thư mục.
+- **Phương thức gọi:** `window.go.controller.VaultController.RenameFolder(oldPath, newName)`
+- **Tham số đầu vào:**
+  | Tên tham số | Kiểu dữ liệu | Bắt buộc | Mô tả kỹ thuật |
+  | :--- | :--- | :---: | :--- |
+  | `oldPath` | `string` | Có | Đường dẫn tuyệt đối của thư mục hiện tại |
+  | `newName` | `string` | Có | Tên thư mục mới (không chứa ký tự cấm: `\ / : * ? " < > \|`) |
+- **Phản hồi thành công:** `null` / `void`.
+- **Mã lỗi:** Trả về lỗi nếu thư mục mới đã tồn tại, cố đổi tên thư mục gốc Workspace, hoặc vi phạm Path Traversal.
+
+---
+
+### 3.13. Đặc Tả Sự Kiện Hệ Thống Thời Gian Thực (Runtime Events)
 
 - **Tên sự kiện:** `on-file-change`
 - **Giao thức:** Wails Event Bus (`runtime.EventsEmit` $\rightarrow$ `runtime.EventsOn`)
@@ -329,33 +423,18 @@ Lớp `WailsAdapter` đóng vai trò là Anti-Corruption Layer, ngăn không cho
 
 ```typescript
 export class WailsAdapter {
-  async selectWorkspace(): Promise<WorkspaceData> {
-    try {
-      // @ts-ignore
-      return await window.go.controller.VaultController.SelectWorkspace();
-    } catch (err) {
-      console.error("Lỗi khi mở workspace:", err);
-      throw err;
-    }
-  }
-
-  async getNoteContent(filePath: string): Promise<Note> {
-    // @ts-ignore
-    return await window.go.controller.VaultController.GetNoteContent(filePath);
-  }
-
-  async saveNoteContent(filePath: string, content: string, title: string, tags: string[]): Promise<void> {
-    // @ts-ignore
-    return await window.go.controller.VaultController.SaveNoteContent(filePath, content, title, tags);
-  }
-
-  onFileChange(callback: (path: string) => void): void {
-    // @ts-ignore
-    if (window.runtime && window.runtime.EventsOn) {
-      // @ts-ignore
-      window.runtime.EventsOn("on-file-change", callback);
-    }
-  }
+  static async selectWorkspace(): Promise<WorkspaceData | null>;
+  static async scanFolder(): Promise<WorkspaceData | null>;
+  static async getNoteContent(path: string): Promise<Note | null>;
+  static async saveNoteContent(id: string, content: string, title: string, tags: string[]): Promise<boolean>;
+  static async createFolder(parentPath: string, folderName: string): Promise<boolean>;
+  static async createNote(folderPath: string, noteTitle: string): Promise<Note | null>;
+  static async searchNotes(query: string): Promise<Note[]>;
+  static async deleteNote(filePath: string): Promise<boolean>;
+  static async deleteFolder(folderPath: string): Promise<boolean>;
+  static async renameNote(oldPath: string, newTitle: string): Promise<Note | null>;
+  static async renameFolder(oldPath: string, newName: string): Promise<boolean>;
+  static onFileChange(callback: (changedPath: string) => void): () => void;
 }
 ```
 
@@ -368,24 +447,47 @@ export class WailsAdapter {
 - **`selectedFolder`:** Thư mục đang được chọn trên cây phân cấp.
 - **Derived Stores:** Tự động tính toán danh sách ghi chú thỏa mãn đồng thời bộ lọc Tag, bộ lọc Folder và từ khóa tìm kiếm (`filteredNotes`).
 
-### 4.3. Thuật Toán Trực Quan Hóa Đồ Thị Tri Thức (`lib/utils/graphBuilder.ts`)
-1. **Trích xuất liên kết:**
-   - Sử dụng biểu thức chính quy:
-     ```javascript
-     const WIKI_LINK_REGEX = /\[\[(.*?)\]\]/g;
+### 4.3. Thuật Toán Trực Quan Hóa Đồ Thị Tri Thức Galaxy Phyllotaxis Spiral (`lib/utils/graphBuilder.ts`)
+
+Đồ thị tri thức của MDVault được mô hình hóa theo phong cách Vũ trụ Thiên hà (Cosmic Galaxy), sử dụng thuật toán Phyllotaxis góc vàng lấy cảm hứng từ cấu trúc hoa hướng dương và dải ngân hà tự nhiên:
+
+1. **Trích xuất liên kết hai chiều (Bidirectional Wiki-Links Extraction):**
+   - Biểu thức chính quy quét liên kết nội bộ:
+     ```typescript
+     const wikiRegex = /\[\[(.*?)\]\]/g;
      ```
-   - Quét qua nội dung của từng Note trong `workspace.notes`.
-2. **Khởi tạo Nodes và Edges:**
-   - Mỗi ghi chú được cấp một Node:
-     ```javascript
-     { id: note.id, data: { label: note.title }, position: { x, y } }
+   - Xây dựng bảng tra cứu tiêu đề `noteMap: Map<string, string>` (ánh xạ `title.toLowerCase()` $\rightarrow$ `id`).
+   - Lập đồ thị vô hướng `edges`, đồng thời tích lũy số bậc liên kết cho từng nút vào `connectionCounts: Map<string, number>`.
+
+2. **Ưu tiên trọng số hạt nhân thiên hà (Galactic Core Sorting):**
+   - Mảng ghi chú được sắp xếp giảm dần theo số lượng liên kết (`connectionCounts`):
+     ```typescript
+     sortedNotes.sort((a, b) => (counts.get(b.id) || 0) - (counts.get(a.id) || 0));
      ```
-   - Tọa độ `(x, y)` được tính toán theo thuật toán Phân bổ Hướng tâm (Radial Distribution) quanh tâm đồ thị:
-     $$x = R \cdot \cos\left(\frac{2\pi \cdot i}{N}\right), \quad y = R \cdot \sin\left(\frac{2\pi \cdot i}{N}\right)$$
-   - Nếu tìm thấy `[[TargetTitle]]` trùng khớp với tiêu đề của một Note khác trong workspace, tạo một Edge:
-     ```javascript
-     { id: `${source.id}->${target.id}`, source: source.id, target: target.id, animated: true }
-     ```
+   - Các ghi chú đóng vai trò "Trục tri thức trung tâm" (Hub Planets) có nhiều liên kết nhất sẽ được đặt tại vùng lõi gần tâm thiên hà.
+
+3. **Mô hình phân bố xoắn ốc Phyllotaxis góc vàng (Golden Angle Phyllotaxis Spiral):**
+   - Góc vàng toán học: $\phi = 2.399963 \text{ rad} \approx 137.5077^\circ$.
+   - Bán kính quỹ đạo tăng dần theo căn bậc hai của chỉ số nút $i$:
+     $$r_i = 100 + \sqrt{i} \cdot \text{spacing} \quad (\text{spacing} = 80 \text{ nếu } N > 20, \text{ ngược lại } 110)$$
+   - Tọa độ 2D của mỗi hành tinh tri thức:
+     $$x_i = X_{\text{center}} + \cos(i \cdot \phi) \cdot r_i, \quad y_i = Y_{\text{center}} + \sin(i \cdot \phi) \cdot r_i$$
+     với tâm thiên hà cố định $X_{\text{center}} = 500, Y_{\text{center}} = 400$.
+
+4. **Kích thước hành tinh động (Dynamic Celestial Sizing):**
+   - Đường kính hành tinh thay đổi mượt mà theo bậc kết nối trong dải $[34\text{px}, 62\text{px}]$:
+     $$\text{size} = \min(62, \max(34, 34 + \text{connections} \times 7))$$
+
+5. **Phân bổ bảng màu vũ trụ đa tầng (Cosmological Galaxy Palettes):**
+   - Màu sắc và quầng sáng (glow) được phân bổ theo danh mục Tags:
+     - **Indigo Pulsar** (`#6366f1`, glow: `rgba(99, 102, 241, 0.5)`): nhóm `code`, `dev`, `tech`, `api`.
+     - **Violet Nebula** (`#a855f7`, glow: `rgba(168, 85, 247, 0.5)`): nhóm `design`, `ui`, `art`.
+     - **Cyan Comet** (`#38bdf8`, glow: `rgba(56, 189, 248, 0.5)`): nhóm `doc`, `guide`, `book`.
+     - **Emerald Aurora** (`#10b981`, glow: `rgba(16, 185, 129, 0.5)`): nhóm `project`, `work`, `vault`.
+     - **Solar Amber** (`#f59e0b`, glow: `rgba(245, 158, 11, 0.5)`): nhóm `daily`, `todo`, `task`.
+     - **Nova Rose** (`#f43f5e`, glow: `rgba(244, 63, 94, 0.5)`): nhóm `personal`, `life`, `idea`.
+   - **Deterministic Hash Fallback:** Khi không chứa nhãn đặc trưng, mã màu được xác định tất định qua hàm băm chuỗi tiêu đề:
+     $$\text{hash} = \left(\sum_{c \in \text{title}} \text{charCode}(c) + \text{index}\right) \pmod 6$$
 
 ---
 
