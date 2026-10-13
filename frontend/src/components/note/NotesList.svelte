@@ -25,6 +25,8 @@
   import { viewMode } from '$lib/stores/viewStore'
   import CustomDropdown, { type DropdownOption } from '../ui/CustomDropdown.svelte'
   import ConfirmModal from '../ui/ConfirmModal.svelte'
+  import NoteIcon from '../ui/NoteIcon.svelte'
+  import { highlightMatch } from '$lib/utils/markdown'
   import { toast } from '$lib/stores/toastStore'
 
   const sortOptions: DropdownOption<SortOption>[] = [
@@ -161,11 +163,16 @@
             <div class="absolute left-0 top-2 bottom-2 w-[3px] bg-[var(--accent-primary)] rounded-r-full shadow-[0_0_10px_var(--accent-glow)]"></div>
           {/if}
 
-          <!-- Note Title & Hover Quick Delete Action -->
+          <!-- Note Title with Frontmatter Icon & Hover Quick Delete Action -->
           <div class="flex items-start justify-between">
-            <span class="font-semibold text-[13px] tracking-tight truncate flex-1 {isSelected ? 'text-[var(--text-primary)] font-bold' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}">
-              {note.title || 'Untitled Note'}
-            </span>
+            <div class="flex items-start space-x-2 flex-1 min-w-0">
+              <span class="mt-0.5 p-0.5 rounded bg-[var(--bg-surface-elevated)] text-[var(--accent-primary)] shrink-0 flex items-center justify-center border border-[var(--border-subtle)]/60 shadow-xs">
+                <NoteIcon icon={note.metadata?.icon} size={12} strokeWidth={2.2} />
+              </span>
+              <span class="font-semibold text-[13px] tracking-tight truncate flex-1 {isSelected ? 'text-[var(--text-primary)] font-bold' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}">
+                {@html highlightMatch(note.title || 'Untitled Note', $searchQuery)}
+              </span>
+            </div>
             <button
               onclick={(e) => {
                 e.stopPropagation()
@@ -179,9 +186,9 @@
             </button>
           </div>
 
-          <!-- Note Excerpt -->
-          <p class="text-[11.5px] mt-1 line-clamp-2 leading-relaxed {isSelected ? 'text-[var(--text-secondary)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-secondary)]'}">
-            {note.excerpt || 'No content preview available...'}
+          <!-- Note Excerpt with Search Highlight -->
+          <p class="text-[11.5px] mt-1.5 line-clamp-2 leading-relaxed {isSelected ? 'text-[var(--text-secondary)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-secondary)]'}">
+            {@html highlightMatch(note.excerpt || 'No content preview available...', $searchQuery)}
           </p>
           
           <!-- Metadata Footer (Date & Tags) -->

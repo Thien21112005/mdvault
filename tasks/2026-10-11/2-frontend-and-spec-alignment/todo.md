@@ -190,35 +190,37 @@ git commit -m "feat(layout): implement glassmorphic status bar with realtime wat
 2. Triển khai bộ lọc highlight từ khóa tìm kiếm trong `NotesList.svelte`: Khi người dùng nhập `searchQuery`, các đoạn ký tự trùng khớp trong `Title` và `Excerpt` được bọc thẻ `<mark>` được tạo kiểu màu sắc tinh tế, an toàn XSS.
 
 **Acceptance criteria:**
-- [ ] File có `icon` trong YAML Frontmatter (ví dụ file `BRD.md` có `icon: "briefcase"`, `SRS.md` có `icon: "cpu"`) hiển thị đúng icon tương ứng thay vì icon tệp đơn điệu.
-- [ ] Khi gõ từ khóa vào ô tìm kiếm, các ký tự khớp trong `NotesList` được tô sáng rõ ràng.
-- [ ] Không phát sinh lỗi XSS hay lỗi render HTML.
+- [x] File có `icon` trong YAML Frontmatter (ví dụ file `BRD.md` có `icon: "briefcase"`, `SRS.md` có `icon: "cpu"`) hiển thị đúng icon tương ứng thay vì icon tệp đơn điệu.
+- [x] Khi gõ từ khóa vào ô tìm kiếm, các ký tự khớp trong `NotesList` được tô sáng rõ ràng.
+- [x] Không phát sinh lỗi XSS hay lỗi render HTML (sử dụng md.utils.escapeHtml trước khi bọc thẻ mark).
 
 **Verification & Testing:**
-- [ ] Type check: `npm run check` (0 errors, 0 warnings).
-- [ ] Mở file `BRD.md` và `PRB.md`, kiểm tra icon hiển thị; gõ từ khóa "clean" hoặc "kiến trúc" kiểm tra highlight.
+- [x] Type check: `npm run check` (0 errors, 0 warnings).
+- [x] Build check: `npm run build` (Exit code 0).
+- [x] Mở file `BRD.md` và `PRB.md`, kiểm tra icon hiển thị; gõ từ khóa "clean" hoặc "kiến trúc" kiểm tra highlight.
 
 **Git Commit:**
 ```bash
-git add frontend/src/components/note/NotesList.svelte frontend/src/components/note/NoteEditor.svelte frontend/src/lib/utils/markdown.ts
+git add frontend/src/components/ui/NoteIcon.svelte frontend/src/components/note/NotesList.svelte frontend/src/components/note/NoteEditor.svelte frontend/src/lib/utils/markdown.ts
 git commit -m "feat(ui): support dynamic frontmatter icons and search keyword highlighting"
 ```
-*(Trạng thái: ⏳ Chưa thực hiện)*
+*(Trạng thái: ✅ Đã commit `ff4a77b`)*
 
 **Dependencies:** Task 5  
 **Files likely touched:**
+- `frontend/src/components/ui/NoteIcon.svelte` (Tạo mới)
 - `frontend/src/components/note/NotesList.svelte`
 - `frontend/src/components/note/NoteEditor.svelte`
 - `frontend/src/lib/utils/markdown.ts`
 
-**Estimated scope:** Medium (3 files)
+**Estimated scope:** Medium (4 files)
 
 ---
 
 ## 🛑 Checkpoint: Sau Phase 3 (Layout & UX Excellence)
-- [ ] StatusBar chân trang hoạt động mượt mà, phản ánh thông số thời gian thực.
-- [ ] Icon Frontmatter hiển thị sống động trên từng ghi chú.
-- [ ] Trải nghiệm tìm kiếm trực quan với từ khóa được highlight rõ nét.
+- [x] StatusBar chân trang hoạt động mượt mà, phản ánh thông số thời gian thực.
+- [x] Icon Frontmatter hiển thị sống động trên từng ghi chú.
+- [x] Trải nghiệm tìm kiếm trực quan với từ khóa được highlight rõ nét.
 
 ---
 
@@ -293,5 +295,5 @@ git commit -m "chore(review): complete two-axis engineering audit and finalize f
 | :---: | :--- | :---: | :---: |
 | **Phase 1** | An Toàn Nhập Liệu & Cầu Nối CRUD | 2 Tasks (T1-T2) | ✅ Hoàn thành (2/2) |
 | **Phase 2** | Giao Diện Tương Tác CRUD Cho Note & Folder | 2 Tasks (T3-T4) | ✅ Hoàn thành (2/2) |
-| **Phase 3** | Polish Giao Diện Chuẩn Đặc Tả PRB/SRS | 2 Tasks (T5-T6) | 🚀 Đang thực hiện (0/2) - Chuẩn bị Task 5 |
-| **Phase 4** | Đồng Bộ Đặc Tả Kỹ Thuật & Nghiệm Thu | 2 Tasks (T7-T8) | ⏳ Chưa thực hiện (0/2) |
+| **Phase 3** | Polish Giao Diện Chuẩn Đặc Tả PRB/SRS | 2 Tasks (T5-T6) | ✅ Hoàn thành (2/2) |
+| **Phase 4** | Đồng Bộ Đặc Tả Kỹ Thuật & Nghiệm Thu | 2 Tasks (T7-T8) | 🚀 Đang thực hiện (0/2) - Chuẩn bị Task 7 |

@@ -26,6 +26,7 @@
   import { renderMarkdown } from '$lib/utils/markdown'
   import { toast } from '$lib/stores/toastStore'
   import ConfirmModal from '../ui/ConfirmModal.svelte'
+  import NoteIcon from '../ui/NoteIcon.svelte'
 
   let editTitle = $state('')
   let editTagsList = $state<string[]>([])
@@ -430,6 +431,13 @@
     <!-- Header bar -->
     <div class="h-12 border-b border-[var(--border-subtle)] px-6 flex items-center justify-between select-none bg-[var(--bg-surface)]/80 backdrop-blur-md sticky top-0 z-10 shrink-0">
       <div class="flex items-center space-x-3 text-[11px] font-medium text-[var(--text-muted)]">
+        <span class="flex items-center space-x-1.5 text-[var(--text-secondary)] font-medium">
+          <span class="p-0.5 rounded bg-[var(--bg-surface-elevated)] text-[var(--accent-primary)] shrink-0 flex items-center justify-center border border-[var(--border-subtle)]/50 shadow-xs">
+            <NoteIcon icon={$selectedNote.metadata?.icon} size={11.5} strokeWidth={2.2} />
+          </span>
+          <span class="truncate max-w-[120px] sm:max-w-[180px]">{$selectedNote.title || 'Untitled'}</span>
+        </span>
+        <span class="text-[var(--border-subtle)]">•</span>
         <span class="flex items-center space-x-1.5 font-mono">
           <Calendar size={12} />
           <span>Modified { $selectedNote.lastModified ? $selectedNote.lastModified.substring(0, 10) : '' }</span>
@@ -555,12 +563,17 @@
           <!-- Left: Editor Pane -->
           <div class="h-full flex flex-col overflow-hidden bg-[var(--bg-surface)]/20">
             <div class="p-6 pb-3 space-y-3 border-b border-[var(--border-subtle)]/50 shrink-0">
-              <input
-                type="text"
-                bind:value={editTitle}
-                placeholder="Note Title"
-                class="w-full bg-transparent border-none px-0 py-1 text-2xl font-bold text-[var(--text-primary)] focus:outline-none focus:ring-0 placeholder-[var(--text-muted)] tracking-tight heading-display"
-              />
+              <div class="flex items-center space-x-2.5">
+                <span class="p-1 rounded-lg bg-[var(--accent-soft)] text-[var(--accent-primary)] border border-[var(--accent-primary)]/20 shrink-0 shadow-xs flex items-center justify-center">
+                  <NoteIcon icon={$selectedNote.metadata?.icon} size={16} strokeWidth={2.2} />
+                </span>
+                <input
+                  type="text"
+                  bind:value={editTitle}
+                  placeholder="Note Title"
+                  class="flex-1 bg-transparent border-none px-0 py-1 text-2xl font-bold text-[var(--text-primary)] focus:outline-none focus:ring-0 placeholder-[var(--text-muted)] tracking-tight heading-display"
+                />
+              </div>
               {@render tagChipsManager()}
               {@render formatToolbar()}
             </div>
@@ -605,12 +618,17 @@
       <!-- EDIT ONLY FOCUS MODE: Centered distraction-free editor -->
       <div class="flex-1 overflow-y-auto w-full">
         <div class="max-w-[760px] mx-auto w-full px-8 py-8 space-y-4 pb-20">
-          <input
-            type="text"
-            bind:value={editTitle}
-            placeholder="Note Title"
-            class="w-full bg-transparent border-none px-0 py-2 text-3xl sm:text-4xl font-bold text-[var(--text-primary)] focus:outline-none focus:ring-0 placeholder-[var(--text-muted)] tracking-tight heading-display"
-          />
+          <div class="flex items-center space-x-3">
+            <span class="p-1.5 rounded-xl bg-[var(--accent-soft)] text-[var(--accent-primary)] border border-[var(--accent-primary)]/20 shrink-0 shadow-xs flex items-center justify-center">
+              <NoteIcon icon={$selectedNote.metadata?.icon} size={22} strokeWidth={2.2} />
+            </span>
+            <input
+              type="text"
+              bind:value={editTitle}
+              placeholder="Note Title"
+              class="flex-1 bg-transparent border-none px-0 py-2 text-3xl sm:text-4xl font-bold text-[var(--text-primary)] focus:outline-none focus:ring-0 placeholder-[var(--text-muted)] tracking-tight heading-display"
+            />
+          </div>
 
           <div class="border-y border-[var(--border-subtle)] py-2">
             {@render tagChipsManager()}
@@ -635,9 +653,14 @@
       <!-- PREVIEW ONLY MODE: Polished document reader view -->
       <div class="flex-1 overflow-y-auto w-full">
         <div bind:this={previewContainerEl} class="max-w-[760px] mx-auto w-full px-8 py-10 pb-20">
-          <h1 class="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] mb-4 tracking-tight leading-tight heading-display">
-            {$selectedNote.title}
-          </h1>
+          <div class="flex items-center space-x-3 mb-4">
+            <span class="p-1.5 rounded-xl bg-[var(--accent-soft)] text-[var(--accent-primary)] border border-[var(--accent-primary)]/20 shrink-0 shadow-xs flex items-center justify-center">
+              <NoteIcon icon={$selectedNote.metadata?.icon} size={22} strokeWidth={2.2} />
+            </span>
+            <h1 class="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] tracking-tight leading-tight heading-display flex-1">
+              {$selectedNote.title}
+            </h1>
+          </div>
 
           {#if $selectedNote.tags && $selectedNote.tags.length > 0}
             <div class="flex items-center flex-wrap gap-1.5 mb-8">

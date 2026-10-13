@@ -71,3 +71,24 @@ export function renderMarkdown(content: string): string {
     FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur', 'style']
   })
 }
+
+/**
+ * Safely highlight search keyword matches in text strings (Title & Excerpt).
+ * Escapes raw text against XSS before wrapping matched substrings with an Apple-style <mark>.
+ */
+export function highlightMatch(text: string, query: string): string {
+  if (!text) return ''
+  if (!query || !query.trim()) {
+    return md.utils.escapeHtml(text)
+  }
+
+  const escapedText = md.utils.escapeHtml(text)
+  const escapedQuery = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const regex = new RegExp(`(${escapedQuery})`, 'gi')
+
+  return escapedText.replace(
+    regex,
+    '<mark class="bg-amber-400/30 text-amber-700 dark:text-amber-300 rounded-[3px] px-0.5 font-semibold">$1</mark>'
+  )
+}
+
