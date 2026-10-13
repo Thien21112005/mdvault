@@ -262,23 +262,23 @@ git commit -m "docs(spec): synchronize LLD specification with current models and
 3. Biên dịch kiểm chứng: `npm run check` $\rightarrow$ `go test -race ./...` $\rightarrow$ `go build -v .`.
 
 **Acceptance criteria:**
-- [ ] `npm run check` đạt 0 errors, 0 warnings.
-- [ ] `go test -race ./...` vượt qua 100% test suites.
-- [ ] `go build -v .` biên dịch thành công nhị phân `mdvault.exe`.
-- [ ] Báo cáo nghiệm thu 2 trục đạt trạng thái PASS.
-- [ ] Cập nhật bảng đăng ký đợt việc tại `tasks/README.md`.
+- [x] `npm run check` đạt 0 errors, 0 warnings.
+- [x] `go test -race ./...` vượt qua 100% test suites.
+- [x] `go build -v .` biên dịch thành công nhị phân `mdvault.exe`.
+- [x] Báo cáo nghiệm thu 2 trục đạt trạng thái PASS.
+- [x] Cập nhật bảng đăng ký đợt việc tại `tasks/README.md`.
 
 **Verification & Testing:**
-- [ ] `npm run check` (exit code 0).
-- [ ] `go test -race ./...` (exit code 0).
-- [ ] `go build -v .` (exit code 0).
+- [x] `npm run check` (exit code 0).
+- [x] `go test -race ./...` (exit code 0).
+- [x] `go build -v .` (exit code 0).
 
 **Git Commit:**
 ```bash
 git add tasks/2026-10-11/2-frontend-and-spec-alignment/ tasks/README.md
 git commit -m "chore(review): complete two-axis engineering audit and finalize frontend alignment"
 ```
-*(Trạng thái: ⏳ Chưa thực hiện)*
+*(Trạng thái: ✅ Đã commit `eec7223`)*
 
 **Dependencies:** Task 7  
 **Files likely touched:**
@@ -296,4 +296,4 @@ git commit -m "chore(review): complete two-axis engineering audit and finalize f
 | **Phase 1** | An Toàn Nhập Liệu & Cầu Nối CRUD | 2 Tasks (T1-T2) | ✅ Hoàn thành (2/2) |
 | **Phase 2** | Giao Diện Tương Tác CRUD Cho Note & Folder | 2 Tasks (T3-T4) | ✅ Hoàn thành (2/2) |
 | **Phase 3** | Polish Giao Diện Chuẩn Đặc Tả PRB/SRS | 2 Tasks (T5-T6) | ✅ Hoàn thành (2/2) |
-| **Phase 4** | Đồng Bộ Đặc Tả Kỹ Thuật & Nghiệm Thu | 2 Tasks (T7-T8) | 🚀 Đang thực hiện (0/2) - Chuẩn bị Task 7 |
+| **Phase 4** | Đồng Bộ Đặc Tả Kỹ Thuật & Nghiệm Thu | 2 Tasks (T7-T8) | ✅ Hoàn thành (2/2) |

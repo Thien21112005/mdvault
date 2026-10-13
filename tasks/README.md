@@ -26,7 +26,7 @@ Quy ước lưu trữ kế hoạch (Plan) và danh sách công việc (Todo) c�
 | STT | Nhiệm Vụ / Kế Hoạch | Trạng Thái | Đường Dẫn Plan & Todo | Nội Dung Chính |
 | :---: | :--- | :--- | :--- | :--- |
 | **01** | **Gia Cố & Cải Tạo Toàn Diện Backend Go** | ✅ Hoàn thành (10/10) | [`tasks/2026-10-11/1-backend-hardening-and-refactor/`](file:///d:/Tu-hoc/project/MDVault/tasks/2026-10-11/1-backend-hardening-and-refactor/) | Sửa bão sự kiện Watcher & Debounce 50ms, Triển khai Atomic Write (.tmp -> Rename), Bảo toàn 100% Frontmatter YAML, In-memory Caching (sync.RWMutex), Chuẩn hóa đường dẫn ToSlash, Chống Path Traversal, Bổ sung CRUD (Delete/Rename) và Bộ Unit Test Go đầy đủ (-race) |
-| **02** | **Hoàn Thiện Frontend, Bổ Sung CRUD UI & Đồng Bộ Đặc Tả Kỹ Thuật** | 🚀 Đang triển khai (7/8) | [`tasks/2026-10-11/2-frontend-and-spec-alignment/`](file:///d:/Tu-hoc/project/MDVault/tasks/2026-10-11/2-frontend-and-spec-alignment/) | Chống race condition mất buffer khi gõ (isDirty guard), mở rộng WailsAdapter & vaultStore CRUD, Action Menu Xóa/Đổi tên Note & Folder, xây dựng StatusBar chân trang PRB, hiển thị icon Frontmatter, highlight từ khóa tìm kiếm và đồng bộ LLD.md |
+| **02** | **Hoàn Thiện Frontend, Bổ Sung CRUD UI & Đồng Bộ Đặc Tả Kỹ Thuật** | ✅ Hoàn thành (8/8) | [`tasks/2026-10-11/2-frontend-and-spec-alignment/`](file:///d:/Tu-hoc/project/MDVault/tasks/2026-10-11/2-frontend-and-spec-alignment/) | Chống race condition mất buffer khi gõ (isDirty guard), mở rộng WailsAdapter & vaultStore CRUD, Action Menu Xóa/Đổi tên Note & Folder, xây dựng StatusBar chân trang PRB, hiển thị icon Frontmatter, highlight từ khóa tìm kiếm và đồng bộ LLD.md |
 
 
 
